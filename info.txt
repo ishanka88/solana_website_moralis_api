@@ -1,0 +1,73 @@
+
+-- create vertual enviornment --
+        1. python3 -m venv venv
+
+-- Active enviornment--
+        1. source venv/bin/activate
+
+-- update requirmrnts.txt file--
+
+        1. pip freeze > requirements.txt
+
+-- AWS loggins command --
+
+        1. chmod 400 "awsPemKey.pem"
+        2. ssh -i "awsPemKey.pem" ec2-user@ec2-54-210-161-116.compute-1.amazonaws.com
+
+-- Update and setup Instance --
+
+        1. sudo yum update -y
+        2. sudo yum install python3-pip -y
+        3. pip3 --version
+        4. sudo yum install git -y  # For Amazon Linux or RHEL-based EC2 instances
+        5. ssh-keygen -t rsa -b 4096 -C "your_email@example.com" 
+        6. press enter twise
+        7. eval "$(ssh-agent -s)" # Start the SSH agent:
+        8. ssh-add ~/.ssh/id_rsa  # Add the SSH private key to the agent:
+        9. cat ~/.ssh/id_rsa.pub  # Copy the Public Key 
+                Ex-  ssh-rsa AAAAB3NzaC.......etc
+
+       10. Step 4: Add SSH Key to GitHub
+                Log in to GitHub and go to your SSH and GPG keys settings:
+
+                Go to GitHub SSH Keys Settings.
+                Click on New SSH Key.
+                Paste the public key you copied earlier into the "Key" field.
+
+                Give the key a title (e.g., "EC2 SSH Key") and click Add SSH Key.
+
+      11. ssh -T git@github.com
+      12. type "yes" and press enter
+
+      13. mkdir MyApps
+      14. cd /home/ec2-user/MyApps   # Replace with your desired directory
+      15. git clone git@github.com:ishanka88/solana_website_bigquerry
+      16. cd solana_website_bigquerry
+      17. git status
+
+-- APP RUN --
+        1. source venv/bin/activate
+        1. pip install -r requirements.txt
+        3. sudo yum install tmux
+        4. tmux new-session -s bigquerrySesssion
+
+
+        4. python3 run.py
+
+
+-- Connect with running Terminal again --
+        1. source venv/bin/activate
+        2. tmux new-session -s bigquerrySesssion
+        3. python3 run.py
+
+        To disconnect from the tmux session (while keeping it running), 
+                press Ctrl + b, then release both keys and press d. 
+                This will detach you from the tmux session and leave your script running.
+
+        To reattach to your screen session and see the running output, use: ### Connect again
+                tmux ls   ### Check terminal list
+                tmux attach -t bigquerrySesssion
+                exit # To terminate the terminal 
+
+---to check folder size---
+        du -sh .   
