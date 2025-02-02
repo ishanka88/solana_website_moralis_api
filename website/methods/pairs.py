@@ -1,6 +1,4 @@
 from website.modles import AvailableCoinSets,CoinTransactions,Pairs
-from website import db
-from flask import flash
 
 
 def get_available_pairs ():

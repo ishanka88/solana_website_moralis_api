@@ -19,10 +19,18 @@
               <div class="collapse navbar-collapse d-flex justify-content-between" id="navbarSupportedContent">
                 <div>
                   <ul class="navbar-nav me-auto mb-2 mb-lg-0 ">
-                    <li class="nav-item mx-2" id="credential_file_name">
+                    <li class="nav-item mx-2" id="api-key">
                       <!-- <a class="nav-link text-dark icon-link icon-link-hover" aria-current="page" href="#">Helius API</a> -->
                     </li>
                   </ul>
+                </div>
+                <div class="d-flex">
+                  <div class="px-2 align-self-center">
+                    <input type="text" class="form-control" id="caTextBox" placeholder="Enter Contract Address">
+                  </div>
+                  <div class="align-self-center">
+                    <button type="button" class="btn btn-primary align-self-center" id="getWebsiteTabs">GET TABS</button>
+                  </div>
                 </div>
                 <div class="mx-4" >
                       <ul class="navbar-nav me-auto mb-2 mb-lg-0 ">
@@ -31,9 +39,6 @@
                         </li>
                         <li class="nav-item mx-2">
                           <a class="nav-link text-dark" href="/whales">Whales</a>
-                        </li>
-                        <li class="nav-item mx-2">
-                          <a class="nav-link text-dark" href="/gainers">Gainers</a>
                         </li>
                         <li class="nav-item mx-2">
                           <a class="nav-link text-dark" href="/pairs">Pairs</a>
@@ -77,28 +82,27 @@
         {% endwith %}
 
 
-                <!-- Credential enter pop-up template -->
-        <div class="modal fade" id="credentialEnterModal" tabindex="-1" aria-labelledby="credentialEnterModal" aria-hidden="true">
+                <!-- Api enter pop-up template -->
+        <div class="modal fade" id="apiEnterModal" tabindex="-1" aria-labelledby="apiEnterModalLabel" aria-hidden="true">
                   <div class="modal-dialog">
                       <div class="modal-content">
                           <div class="modal-header">
-                              <h5 class="modal-title" id="CredentialEnterModalLabel">Input Credential File</h5>
+                              <h5 class="modal-title" id="apiEnterModalLabel">Enter API</h5>
                               <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                   <span aria-hidden="true">&times;</span>
                               </button> -->
                           </div>
                           <div class="modal-body">
                               <form id="nameForm">
-                                <div class="d-flex justify-content-center pt-2 px-4">
-                                  <div class="px-2 d-flex align-self-center" >
-                                    <input class="form-control form-control-sm" type="file" id="credentialFileInput" accept="file/*">
+                                  <div class="form-group">
+                                      <label for="apiInput">API</label>
+                                      <input type="text" class="form-control" id="apiInput" required>
                                   </div>
-                                </div>
                               </form>
                           </div>
                           <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" id="CredentialEnterCancelButton" data-dismiss="modal" >Cancel</button>
-                              <button type="button" class="btn btn-primary" id="CredentialEnterSubmitButton" >Submit</button>
+                              <button type="button" class="btn btn-secondary" id="ApiEnterCancelButton" data-dismiss="modal" >Cancel</button>
+                              <button type="button" class="btn btn-primary" id="ApiEnterOkButton" >OK</button>
                           </div>
                       </div>
                   </div>
@@ -120,6 +124,7 @@
           </div>
         </div>
 
+      
         <div>
             {% block content %}{% endblock %}
         </div>

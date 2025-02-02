@@ -96,7 +96,7 @@ function addSets(){
                             <th scope="col">#</th>
                             <th scope="col">COIN</th>
                             <th scope="col">PRIORITY</th>
-                            <th scope="col">DISCRIPTION</th>
+                            <th scope="col">DESCRIPTION</th>
                             <th scope="col">FROM DATE</th>
                             <th scope="col">TO DATE</th>
                             <th scope="col">PROFIT</th>
@@ -234,11 +234,6 @@ function renderPendingTable(data, page = 1) {
 
 
 
-
-
-
-
-
 function searchCoinSets() {
     addSetsCard.classList.add('d-none');
     searchCoinSetsCard.classList.remove('d-none');
@@ -309,6 +304,7 @@ function action(element_name,element_id){
     }
 
 }
+
 
 
 function importData() {
@@ -485,151 +481,157 @@ function renderPagination(data, page = 1) {
 }
 
 function renderTable(data, page = 1,status) {
-      const tableBody = document.getElementById('tableBody');
-      tableBody.innerHTML = '';
+    const tableBody = document.getElementById('tableBody');
+    tableBody.innerHTML = '';
 
-      const start = (page - 1) * rowsPerPage;
-      const end = start + rowsPerPage;
-      const paginatedData = data.slice(start, end);
-      // current_status=status
-      if (status === "active") {
-          action_column = ` 
-              <div class="d-flex flex-row justify-content-around">
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const paginatedData = data.slice(start, end);
+    // current_status=status
+    if (status === "active") {
+        action_column = ` 
+            <div class="d-flex flex-row justify-content-around">
+              <div class="icon-link icon-link-hover">
+                  <i class="bi bi-trash  icon-link icon-link-hover" name="delete_active"></i>
+              </div>
+              <div class="icon-link icon-link-hover">
+                <i class="bi bi-arrow-left-right icon-link icon-link-hover" name="active-to-pending"></i>
+              </div>
+            </div>
+          `
+    } else if (status === "pending") {
+        action_column = ` 
+            <div class="d-flex flex-row justify-content-around">
+              <div class="icon-link icon-link-hover">
+                  <i class="bi bi-trash  icon-link icon-link-hover" name="delete"></i>
+              </div>
+              <div class="icon-link icon-link-hover">
+                <i class="bi bi-arrow-left-right icon-link icon-link-hover"  name="pending-to-active"></i>
+              </div>
+            </div>
+          `
+    } else {
+        action_column = ` 
+              <div class="d-flex flex-row justify-content-around ">
                 <div class="icon-link icon-link-hover">
-                    <i class="bi bi-trash  icon-link icon-link-hover" name="delete_active"></i>
+                  <i class="bi bi-trash  icon-link icon-link-hover" name="delete"></i>
                 </div>
                 <div class="icon-link icon-link-hover">
-                  <i class="bi bi-arrow-left-right icon-link icon-link-hover" name="active-to-pending"></i>
+                  <i class="bi bi-arrow-left-right icon-link icon-link-hover"  name="running-to-pending"></i>
+                </div>
+                <div class="icon-link icon-link-hover">
+                  <i class="bi bi-info-circle icon-link icon-link-hover" name="info"></i>
                 </div>
               </div>
-            `
-      } else if (status === "pending") {
-          action_column = ` 
-              <div class="d-flex flex-row justify-content-around">
-                <div class="icon-link icon-link-hover">
-                    <i class="bi bi-trash  icon-link icon-link-hover" name="delete"></i>
-                </div>
-                <div class="icon-link icon-link-hover">
-                  <i class="bi bi-arrow-left-right icon-link icon-link-hover"  name="pending-to-active"></i>
-                </div>
-              </div>
-            `
-      } else {
-          action_column = ` 
-                <div class="d-flex flex-row justify-content-around ">
-                  <div class="icon-link icon-link-hover">
-                    <i class="bi bi-trash  icon-link icon-link-hover" name="delete"></i>
-                  </div>
-                  <div class="icon-link icon-link-hover">
-                    <i class="bi bi-arrow-left-right icon-link icon-link-hover"  name="running-to-pending"></i>
-                  </div>
-                  <div class="icon-link icon-link-hover">
-                    <i class="bi bi-info-circle icon-link icon-link-hover" name="info"></i>
-                  </div>
-                </div>
-          `
-      }
-
-      let row_number=start
-      paginatedData.forEach(row => {
-          const tr = document.createElement('tr');
-          tr.setAttribute('id', row.set_number);
-          tr.setId
-          row_number= row_number+1
-
-          contract_address_icon_html= `
-          <i class="bi bi-upc-scan icon-link icon-link-hover" onclick="funSolscanForWallet('${row.contract_adress}')"></i>
-          `
-          from_signature_icon_html = `
-          <i class="bi bi-upc-scan icon-link icon-link-hover" onclick="funSolscanForSignature('${row.from_signature}')"></i>
-          `
-          to_signature_icon_html = `
-              <i class="bi bi-upc-scan icon-link icon-link-hover" onclick="funSolscanForSignature('${row.to_signature}')"></i>
-          `
-          if (row.priority == "buy"){
-              priority_html = ` <td class="text-success fw-bold">BUY</td>`
-          }else{
-              priority_html = ` <td class="text-danger fw-bold">SELL</td>`
-          }
-
-
-          tr.innerHTML = `
-            <th scope="row">${row_number}</th>
-            <td > 
-                <div class="d-flex justify-content-around">
-                    <div class="mr-3">
-                        ${row.ticker}
-                    </div>
-                    <div>
-                        ${contract_address_icon_html}
-                    </div>
-                </div>
-            </td>
-            ${priority_html}
-            <td>${row.set_number}</td>
-            <td>${row.description}</td>
-            <td > 
-                <div class="d-flex justify-content-around">
-                    <div class="mr-3">
-                        ${row.from_date}
-                    </div>
-                    <div>
-                        ${from_signature_icon_html}
-                    </div>
-                </div>
-            </td>
-            <td > 
-                <div class="d-flex justify-content-around">
-                    <div class="mr-3">
-                        ${row.to_date}
-                    </div>
-                    <div>
-                        ${to_signature_icon_html}
-                    </div>
-                </div>
-            </td>
-            <td class="text-success fw-bold">${row.profit} %</td>
-            <td>${row.txn_count}</td>
-            <td>${row.valid_txn_count}</td>
-            <td>${row.wallet_transfers_count}</td>
-            <td>${row.uni_wallets_count}</td>
-            <td class="text-success fw-bold">${row.buy_uni_wallet_count}</td>
-            <td class="text-danger fw-bold">${row.sell_uni_wallet_count}</td>
-            <td> 
-                ${action_column}
-            </td>
-  
-          `;
-          tableBody.appendChild(tr);
-          tr.addEventListener('click', function(event) {
-                element_name=event.target.getAttribute('name')
-                element_id=event.target.closest('tr').getAttribute('id')
-                if(element_name=="delete"){
-                    let confirmation = confirm("Do you want to DELETE ?");
-                    if (!confirmation) {
-                          event.preventDefault();
-                          return;
-                    }
-                    showModal()
-                }else if (element_name=="active-to-pending"||element_name=="pending-to-active"||element_name=="running-to-pending"){
-                    let confirmation = confirm("Do you want to SHIFT ?");
-                    if (!confirmation) {
-                          event.preventDefault();
-                          return;
-                    }
-                    showModal()
-                }
-                if (element_name=="info"){
-                    action(element_name,element_id)
-                }
-          });
-  
-      });
-
-      renderPagination(data,page)
-
-
+        `
     }
+
+    let row_number=start
+    paginatedData.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.setAttribute('id', row.set_number);
+        tr.setId
+        row_number= row_number+1
+
+        contract_address_icon_html= `
+        <i class="bi bi-upc-scan icon-link icon-link-hover" onclick="funSolscanForWallet('${row.contract_adress}')"></i>
+        `
+        from_signature_icon_html = `
+        <i class="bi bi-upc-scan icon-link icon-link-hover" onclick="funSolscanForSignature('${row.from_signature}')"></i>
+        `
+        to_signature_icon_html = `
+            <i class="bi bi-upc-scan icon-link icon-link-hover" onclick="funSolscanForSignature('${row.to_signature}')"></i>
+        `
+        if (row.priority == "buy"){
+            priority_html = ` <td class="text-success fw-bold">BUY</td>`
+        }else{
+            priority_html = ` <td class="text-danger fw-bold">SELL</td>`
+        }
+
+
+        tr.innerHTML = `
+          <th scope="row">${row_number}</th>
+          <td > 
+              <div class="d-flex justify-content-around">
+                  <div class="mr-3">
+                      ${row.ticker}
+                  </div>
+                  <div>
+                      ${contract_address_icon_html}
+                  </div>
+              </div>
+          </td>
+          ${priority_html}
+          <td>${row.set_number}</td>
+          <td>${row.discription}</td>
+          <td > 
+              <div class="d-flex justify-content-around">
+                  <div class="mr-3">
+                      ${row.from_date}
+                  </div>
+                  <div>
+                      ${from_signature_icon_html}
+                  </div>
+              </div>
+          </td>
+          <td > 
+              <div class="d-flex justify-content-around">
+                  <div class="mr-3">
+                      ${row.to_date}
+                  </div>
+                  <div>
+                      ${to_signature_icon_html}
+                  </div>
+              </div>
+          </td>
+          <td class="text-success fw-bold">${row.profit} %</td>
+          <td>${row.txn_count}</td>
+          <td>${row.valid_txn_count}</td>
+          <td>${row.uni_wallets_count}</td>
+          <td class="text-success fw-bold">${row.buy_uni_wallet_count}</td>
+          <td class="text-danger fw-bold">${row.sell_uni_wallet_count}</td>
+          <td> 
+              ${action_column}
+          </td>
+          <td> 
+              <button type="button" class="btn btn-info" onclick="funGetTransactionsDetails('${row.set_number}','${row.ticker}','${row.contract_adress}','${status}','${row.priority}')">Info</button>
+          </td>
+
+        `;
+        tableBody.appendChild(tr);
+        tr.addEventListener('click', function(event) {
+              element_name=event.target.getAttribute('name')
+              element_id=event.target.closest('tr').getAttribute('id')
+              if(element_name=="delete"){
+                  let confirmation = confirm("Do you want to DELETE ?");
+                  if (!confirmation) {
+                        event.preventDefault();
+                        return;
+                  }
+                  showModal()
+              }else if (element_name=="active-to-pending"||element_name=="pending-to-active"||element_name=="running-to-pending"){
+                  let confirmation = confirm("Do you want to SHIFT ?");
+                  if (!confirmation) {
+                        event.preventDefault();
+                        return;
+                  }
+                  showModal()
+              }
+              if (element_name=="info"){
+                  action(element_name,element_id)
+              }
+        });
+
+    });
+
+    renderPagination(data,page)
+
+
+  }
+
+
+
+
 document.getElementById('searchInput').addEventListener('input', function(event) {
         const searchTerm = event.target.value.toLowerCase();
         if (searchTerm !== "") {
@@ -656,21 +658,16 @@ function checkFormData() {
         let coinName = $('#ticker').val();
         let peakValue = parseFloat($('#peakValue').val()); // Convert to number
         let lowValue = parseFloat($('#lowValue').val());   // Convert to number
-        let discription =$('#discription').val();
+        let description =$('#description').val();
         let priority_value =$('#radio').val();
 
         
         // Retrieve the selected radio button value
         let priority = $('input[name="radio"]:checked').val(); // Get the value of the checked radio button
 
-        if (wallet.length!=44){
-            alert("Incorrect solana wallet address (must be 44 characters)");
-            return false
-
-        }
-
+        
         // Check for empty required fields
-        if (wallet === "" || coinName === "" || discription==="") {
+        if (wallet === "" || coinName === "" || description==="") {
             alert("Empty inputs");
             return false
         }
@@ -993,7 +990,7 @@ document.addEventListener('DOMContentLoaded', () => {
         priority: formData.get('radio'),
         ticker: formData.get('ticker'),
         lowValue: formData.get('lowValue'),
-        discription: formData.get('discription'),
+        description: formData.get('description'),
         peakValue: formData.get('peakValue')
     };
 
@@ -1016,6 +1013,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(result[1]);
             spinner.classList.add('d-none');  
             alert(result[1]);
+            location.reload();
         }else{
             console.log(result[1]);
             alert(result[1]); 
@@ -1060,3 +1058,366 @@ document.addEventListener('DOMContentLoaded', () => {
         });
   });
 });
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+//Transaction details html loading
+
+let transactionsData =[]
+let coniDetails =[]
+
+function funGetTransactionsDetails(setNumber,ticker,contract_adress,status,priority) {
+
+    let targetElement1 = $('#mainElement');
+    targetElement1.addClass('d-none'); // Adds the 'd-none' class to hide the element
+    let targetElement2 = $('#txnDetails');
+    targetElement2.removeClass('d-none');
+
+    getTransactionsData(setNumber,ticker,contract_adress,status,priority)
+}
+
+function goExit() {
+    window.location.reload(true);
+     // Adds the 'd-none' class to hide the element
+ // Adds the 'd-none' class to hide the element
+}
+
+function goBack() {
+
+    renderTransactionsTable(transactionsData,page = 1,coniDetails[0],coniDetails[1],coniDetails[2],coniDetails[3],coniDetails[4]) // Access the 'data' key in the response
+
+     // Adds the 'd-none' class to hide the element
+ // Adds the 'd-none' class to hide the element
+}
+
+function getTransactionsData(setNumber,ticker,contract_adress,status,priority){
+
+    fetch(`/get-transactions-data?setNumber=${encodeURIComponent(setNumber)}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status){
+            transactionsData = data.transactions
+            coniDetails =[setNumber,ticker,contract_adress,status,priority]
+     
+            renderTransactionsTable(data.transactions,page = 1,setNumber,ticker,contract_adress,status,priority) // Access the 'data' key in the response
+        }else{
+            alert (data.message,error)
+        }
+    })
+    .catch(error => alert('Error fetching data:', error));
+
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the button and input elements
+    const tokenAmountInput = document.getElementById('tokenAmount');
+    //const tokenAmountFilterButton = document.getElementById('tokenAmountFilterButton');
+    
+    // Add event listener for button click
+    tokenAmountInput.addEventListener('input', function() {
+        // Get the value entered in the input field
+        const tokenAmount = tokenAmountInput.value; // Get the input value as a string
+        filterTransactionByTokenAmount(tokenAmount)
+    });
+
+});
+
+function filterAllPayeeTransactions(payee){
+    filterDataList =[] 
+    for (row of transactionsData) {
+        if (row.fee_payer === payee) {
+            filterDataList.push(row); 
+        }     
+    }
+    
+    renderTransactionsTable(filterDataList,page = 1,coniDetails[0],coniDetails[1],coniDetails[2],coniDetails[3],coniDetails[4]) // Access the 'data' key in the response
+
+}
+
+
+function filterTransactionByTokenAmount(tokenAmount) {
+
+    filterDataList =[] 
+    for (row of transactionsData) {
+        if (row.bought_token === coniDetails[2]) {
+            tranferAmount = row.bought_token_amount
+        } else{
+            tranferAmount = row.sold_token_amount
+        }
+
+        if (tranferAmount >= tokenAmount) {
+            filterDataList.push(row); // Adds `row` to the `filterDataList` array
+        }
+        
+        
+    }
+    
+    renderTransactionsTable(filterDataList,page = 1,coniDetails[0],coniDetails[1],coniDetails[2],coniDetails[3],coniDetails[4]) // Access the 'data' key in the response
+
+}
+
+
+const rowsPerPageTxn = 10;  // Number of rows per page
+
+function renderTransactionsPagination(data, page = 1, setNumber, ticker, contract_adress, status,priority) {
+    const totalRows = data.length;
+    const totalPages = Math.ceil(totalRows / rowsPerPageTxn); // Total number of pages
+    const pagination = document.getElementById('pagination2');
+    pagination.innerHTML = ''; // Clear existing pagination
+
+    const pagesPerRange = 10;  // Maximum number of page links shown at once
+    const currentRangeStart = Math.floor((page - 1) / pagesPerRange) * pagesPerRange + 1;
+    const currentRangeEnd = Math.min(currentRangeStart + pagesPerRange - 1, totalPages);
+
+    // Create "Previous" button
+    const prevButton = document.createElement('li');
+    prevButton.className = 'page-item' + (page === 1 ? ' disabled' : ''); // Disable if on the first page
+    prevButton.innerHTML = `<a class="page-link" href="#">Previous</a>`;
+    prevButton.addEventListener('click', function() {
+        if (page > 1) {
+            renderTransactionsTable(data, page - 1, setNumber, ticker, contract_adress, status,priority);
+        }
+    });
+    pagination.appendChild(prevButton);
+
+    // Generate page numbers for the current range
+    for (let i = currentRangeStart; i <= currentRangeEnd; i++) {
+        const li = document.createElement('li');
+        li.className = `page-item ${i === page ? 'active' : ''}`;
+        li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+        li.addEventListener('click', function() {
+            renderTransactionsTable(data, i, setNumber, ticker, contract_adress, status,priority);
+        });
+        pagination.appendChild(li);
+    }
+
+    // Create "Next" button
+    const nextButton = document.createElement('li');
+    nextButton.className = 'page-item' + (page === totalPages ? ' disabled' : ''); // Disable if on the last page
+    nextButton.innerHTML = `<a class="page-link" href="#">Next</a>`;
+    nextButton.addEventListener('click', function() {
+        if (page < totalPages) {
+            renderTransactionsTable(data, page + 1, setNumber, ticker, contract_adress, status,priority);
+        }
+    });
+    pagination.appendChild(nextButton);
+
+    // Display the maximum page number
+    const maxPageNumber = document.createElement('span');
+    maxPageNumber.className = 'max-page';
+    maxPageNumber.innerHTML = `Page ${page} of ${totalPages}`; // Display current page and total pages
+    pagination.appendChild(maxPageNumber);
+}
+
+  
+function renderTransactionsTable(data, page = 1,setNumber,ticker,contract_adress,status , priority) {
+        const txnHeadDetails = document.getElementById('txnHeadDetails');
+        const transactionsCountHtml = document.getElementById('transactionsCount');
+        transactionsCountHtml.innerHTML = `<span>Transactions - ${data.length}</span>`;
+        
+
+        if (priority==="buy"){
+            priorityHtml = `
+               <span class="font-weight-bold text-success">
+                    BUY
+               </span>
+                
+            `
+        }else{
+            priorityHtml = `
+            <span class="font-weight-bold text-danger">
+                 SELL
+            </span>
+             
+         `
+        }
+
+        txnHeadDetails.innerHTML = `
+            <div class="m-2 mx-5"> PRIORITY - ${priorityHtml}</div>
+            <div class="m-2 mx-5"> SET NO - ${setNumber}</div>
+            <div class="m-2 mx-5"> TICKER - ${ticker}</div>
+            <div class="m-2 mx-5 btn btn-link text-primary" style="cursor: pointer;" onclick="funSolscanForWallet('${contract_adress}')"> CA - ${contract_adress}</div>
+            <div class="m-2 mx-5"> STATUS - ${status}</div>
+        `;
+
+
+        const tableBody = document.getElementById('txnTableBody');
+        tableBody.innerHTML = '';
+  
+        const start = (page - 1) * rowsPerPageTxn;
+        const end = start + rowsPerPageTxn;
+        const paginatedData = data.slice(start, end);
+  
+        let row_number=start
+        paginatedData.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.setAttribute('id', row.set_number);
+            tr.setId
+            row_number= row_number+1
+            const date_time = convertToUTCFormat(row.time_stamp)
+
+            signature = row.signature
+            const firstThree = signature.substring(0, 3);
+            const lastThree = signature.substring(signature.length - 3);
+            const modifySignature = firstThree+"..."+ lastThree
+
+            payee = row.fee_payer
+            const firstThree1 = payee.substring(0, 4);
+            const lastThree1 = payee.substring(payee.length - 4);
+            const modifyPayee = firstThree1+"..."+ lastThree1
+
+            bought_token = row.bought_token
+            sold_token = row.sold_token
+
+            if (bought_token === ticker) {
+                amount = `
+                <span class="d-flex justify-content-end font-weight-bold text-success">
+                    ${row.bought_token_amount.toFixed(0)}
+                </span>
+                `
+                modifyBaughtToken = `
+                <span class="d-flex justify-content-center font-weight-bold text-success">
+                    ${ticker}
+                </span>`
+
+                modifyBaughtTokenAmount= `           
+                <span class="d-flex justify-content-end font-weight-bold text-success">
+                 ${row.bought_token_amount.toFixed(2)}
+                </span>`
+            ;
+            } else {
+                // Default case: show the token as is
+                modifyBaughtToken = `
+                <span class="d-flex justify-content-center ">
+                    ${bought_token}
+                </span>
+            `
+                modifyBaughtTokenAmount= `           
+                <span class="d-flex justify-content-end">
+                ${row.bought_token_amount.toFixed(2)}
+                </span>`
+            ;
+            }
+
+
+            // sold token
+            if (sold_token === ticker) {
+                amount = `
+                <span class="d-flex justify-content-end font-weight-bold text-danger">
+                    ${row.sold_token_amount.toFixed(0)}
+                </span>
+            `;
+                modifySoldToken = `
+                <span class=" d-flex justify-content-center font-weight-bold text-danger">
+                    ${ticker}
+                </span>
+            `
+                modifySoldTokenAmount= `           
+                <span class="d-flex justify-content-end font-weight-bold text-danger">
+                ${row.sold_token_amount.toFixed(2)}
+                </span>`
+            ;
+            } else {
+                // Default case: show the token as is
+                modifySoldToken = `
+                <span class="d-flex justify-content-center ">
+                    ${sold_token}
+                </span>
+            `
+                modifySoldTokenAmount= `           
+                <span class="d-flex justify-content-end">
+                ${row.sold_token_amount.toFixed(2)}
+                </span>`
+            ;
+            }
+
+
+            if (row.status=="buy"){
+                status_element = ` 
+                <div class="font-weight-bold text-success">
+                    BUY
+                </div>
+          `
+            }else{
+                status_element = ` 
+                <div class="font-weight-bold text-danger">
+                    SELL
+                </div>
+            `
+            }
+
+            tr.innerHTML = `
+              <th scope="row">${row_number}</th>
+              <td>
+                <span class="btn btn-link text-primary" style="cursor: pointer;" onclick="funSolscanForSignature('${signature}')">
+                    ${modifySignature}
+                </span>
+              </td>
+              <td >${date_time}</td>
+              <td>
+                <div class="d-flex justify-content-between ">
+                    <div>
+                    <span class="btn btn-link text-primary" style="cursor: pointer;" onclick="funSolscanForWallet('${payee}')">
+                        ${modifyPayee}
+                    </span>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary" onclick="filterAllPayeeTransactions('${payee}')">
+                            go
+                        </button>
+                    </div>
+                </div>
+              </td>
+              <td>
+                ${status_element}
+              </td>
+              <td>
+                ${amount}
+              </td>
+              <td>${modifyBaughtToken}</td>
+              <td>${modifyBaughtTokenAmount}</td>
+              <td >${modifySoldToken}</td>
+              <td >${modifySoldTokenAmount}</td>
+
+            `;
+            tableBody.appendChild(tr);
+    
+        });
+  
+        renderTransactionsPagination(data,page,setNumber,ticker,contract_adress,status,priority)
+  
+  
+      }
+
+
+function convertToUTCFormat(dateString) {
+        // Create a Date object from the input string
+        const date = new Date(dateString);
+        
+        // Extract components from the Date object
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Month is zero-indexed
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const hours = String(date.getUTCHours()).padStart(2, '0');
+        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+        const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+        
+        // Format the result as "YYYY-MM-DD HH:MM:SS UTC"
+        return `${year}-${month}-${day}\n ${hours}:${minutes}:${seconds} UTC`;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////

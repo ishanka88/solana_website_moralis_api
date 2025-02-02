@@ -1,5 +1,4 @@
 from website.modles import AvailableCoinSets,CoinTransactions
-from website import db
 from flask import flash
 
 def getFromCoins(status):

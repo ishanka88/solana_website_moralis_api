@@ -12,12 +12,11 @@ class AvailableCoinSets(db.Model): ## searchedCoins
      ticker = db.Column(db.String(150),nullable=False)
      description = db.Column(db.String(150),nullable=False)
      priority = db.Column(db.String(10),nullable=False,default="no")
-     from_timestamp = db.Column(db.Integer,nullable=False)
-     to_timestamp = db.Column(db.Integer, nullable=False)
+     from_timestamp = db.Column(db.String(150),nullable=False)
+     to_timestamp = db.Column(db.String(150), nullable=False)
      from_signature = db.Column(db.String(100), nullable=False)
      to_signature = db.Column(db.String(100),nullable=False)
      tx_count= db.Column(db.Integer,nullable=False,default=1)
-     wallet_transfers_count= db.Column(db.Integer,nullable=False,default=0)
      fake_transactions_count= db.Column(db.Integer,nullable=False,default=0)
      buy_tx_count = db.Column(db.Integer,nullable=False, default=0)
      sell_tx_count = db.Column(db.Integer,nullable=False, default=0)
@@ -29,50 +28,65 @@ class AvailableCoinSets(db.Model): ## searchedCoins
      status = db.Column(db.Integer,nullable=False)  ## 0 - running , 1-pending , 2-active
 
 
+
+
      @staticmethod
      def add_new_coin_set(data):
-        """
-        Add a new coin set to the AvailableCoinSets table.
-        
-        :param data: A dictionary containing the coin set data
-        :return: True if the transaction is successful, False otherwise
-        """
-        try:
-            # Create a new AvailableCoinSets object with the provided data
-            new_coin_set = AvailableCoinSets(
-                set_number=data['set_number'],
-                contract_address=data['contract_address'],
-                ticker=data['ticker'],
-                description=data['description'],
-                priority=data['priority'],
-                from_timestamp=data['from_timestamp'],
-                to_timestamp=data['to_timestamp'],
-                from_signature=data['from_signature'],
-                to_signature=data['to_signature'],
-                tx_count=data['tx_count'],
-                wallet_transfers_count=data['wallet_transfers_count'],
-                fake_transactions_count=data['fake_transactions_count'],
-                buy_tx_count=data['buy_tx_count'],
-                sell_tx_count=data['sell_tx_count'],
-                uni_wallet_count=data['uni_wallet_count'],
-                buy_uni_wallet_count=data['buy_uni_wallet_count'],
-                sell_uni_wallet_count=data['sell_uni_wallet_count'],
-                low_value=data['low_value'],
-                peak_value=data['peak_value'],
-                status=data['status']
-            )
+          """
+     Add a new coin set to the AvailableCoinSets table.
+     
+     :param data: A dictionary containing the coin set data
+     :return: True if the transaction is successful, False otherwise
+     """
+          try:
+               # Create a new AvailableCoinSets object with the provided data   
+               new_coin_set = AvailableCoinSets(
+                    set_number=data['set_number'],
+                    contract_address=data['contract_address'],
+                    ticker=data['ticker'],
+                    description=data['description'],
+                    priority=data['priority'],
+                    from_timestamp=data['from_timestamp'],
+                    to_timestamp=data['to_timestamp'],
+                    from_signature=data['from_signature'],
+                    to_signature=data['to_signature'],
+                    tx_count=data['tx_count'],
+                    fake_transactions_count=data['fake_transactions_count'],
+                    buy_tx_count=data['buy_tx_count'],
+                    sell_tx_count=data['sell_tx_count'],
+                    uni_wallet_count=data['uni_wallet_count'],
+                    buy_uni_wallet_count=data['buy_uni_wallet_count'],
+                    sell_uni_wallet_count=data['sell_uni_wallet_count'],
+                    low_value=data['low_value'],
+                    peak_value=data['peak_value'],
+                    status=data['status']
+               )
 
-            # Add the new object to the session and commit
-            db.session.add(new_coin_set)
-            db.session.commit()
+               # Add the new object to the session and commit
+               db.session.add(new_coin_set)
+               db.session.commit()
 
-            return True, "Coin set added successfully"
+               return True, "Coin set added successfully"
+          
+          except IntegrityError as e:
+               # Handle integrity error (e.g., duplicate entries or violations of NOT NULL constraints)
+               db.session.rollback()  # Rollback the session to undo any changes made
+               print (str(e))
+               return False, f"Integrity error: {str(e)}"
+          
+          except SQLAlchemyError as e:
+               # Catch any other SQLAlchemy-related errors
+               db.session.rollback()
+               print (str(e))
+               return False, f"Database error: {str(e)}"
+          
+          except Exception as e:
+               # Catch any other generic errors
+               db.session.rollback()
+               print (str(e))
+               return False, f"Unexpected error: {str(e)}"
 
-        except SQLAlchemyError as e:
-            # Rollback in case of error
-            db.session.rollback()
-            return False, f"Error adding coin set: {str(e)}"
-        
+          
         
      @staticmethod
      def get_item(set_num):
@@ -563,11 +577,14 @@ same_signatures=0
 
 class CoinTransactions (db.Model): #coinTransactions
      signature = db.Column(db.String(100),primary_key=True,nullable=False)
-     time_stamp = db.Column(db.Integer,nullable=False)
+     time_stamp = db.Column(db.String(150),nullable=False)
      fee_payer =db.Column(db.String(100),nullable=False)
-     pre_token_balance = db.Column(db.Float, nullable=False, default=0.0) 
-     post_token_balance = db.Column(db.Float, nullable=False, default=0.0) 
-     status = db.Column(db.String(10),nullable=False)
+     bought_token = db.Column(db.String(100),nullable=False)
+     bought_token_amount = db.Column(db.Float, nullable=False, default=0.0) 
+     sold_token = db.Column(db.String(100),nullable=False)
+     sold_token_amount = db.Column(db.Float, nullable=False, default=0.0) 
+     status = db.Column(db.String(10),nullable=False) #buy or sell
+     sub_category = db.Column(db.String(30),nullable=False,default="unknown") # Partialy buy or sell
      set_number = db.Column(db.Integer, nullable=False)
 
      # def __init__(self, signature, time_stamp, fee_payer, pre_token_balance, post_token_balance, status, set_number):
@@ -578,6 +595,37 @@ class CoinTransactions (db.Model): #coinTransactions
      #    self.post_token_balance = post_token_balance
      #    self.status = status
      #    self.set_number = set_number
+
+     def to_dict(self):
+        """
+        Convert a CoinTransaction object to a dictionary format for JSON serialization.
+        
+        :return: Dictionary representation of the transaction
+        """
+        return {
+            'signature': self.signature,
+            'time_stamp': self.time_stamp,
+            'fee_payer': self.fee_payer,
+            'bought_token': self.bought_token,
+            'bought_token_amount': self.bought_token_amount,
+            'sold_token': self.sold_token,
+            'sold_token_amount': self.sold_token_amount,
+            'status': self.status,
+            'sub_category': self.sub_category,
+            'set_number': self.set_number
+        }
+
+     def get_transactions_by_set_number(set_number):
+
+        """
+        This method returns all transactions for a given set_number.
+        
+        :param set_number: The set number to filter transactions by
+        :return: List of CoinTransactions matching the given set_number
+        """
+        # Query the database for all transactions with the given set_number
+        transactions = db.session.query(CoinTransactions).filter_by(set_number=set_number).all()
+        return transactions
 
      @classmethod
      def add_transactions_to_db(cls, transaction_data):
@@ -778,11 +826,14 @@ class CoinTransactions (db.Model): #coinTransactions
           global same_signatures
           new_txn = CoinTransactions(
                signature=txn['signature'],
-               time_stamp=txn['timestamp'],
-               fee_payer=txn['feePayer'],  # Fee payer
-               pre_token_balance = details['pre_token_balance'],
-               post_token_balance = details['post_token_balance'],
+               time_stamp=txn['time_stamp'],
+               fee_payer=txn['fee_payer'],  # Fee payer
+               bought_token = details['bought_token'],
+               bought_token_amount = details['bought_token_amount'],
+               sold_token = details['sold_token'],
+               sold_token_amount = details['sold_token_amount'],
                status = details['status'],
+               sub_category = details['sub_category'],
                set_number= set_number # change this
           )
           
@@ -998,27 +1049,25 @@ class Pairs (db.Model):
                return False
 
 
-
-
 ###############################################################################################################
-## Credential key database
-class Credentials (db.Model):
+## API key database
+class MoralisApiKey (db.Model):
      id = db.Column(db.Integer,primary_key=True, nullable=False,autoincrement=True)
-     credentil_file_name = db.Column(db.String(100),nullable=False)
+     api_key = db.Column(db.String(150),nullable=False)
 
-     def add_credential(credentil_file_name):
+     def add_api(api_key):
           try:
-               new_entry = Credentials(credentil_file_name=credentil_file_name)
+               new_entry = MoralisApiKey(api_key=api_key)
                db.session.add(new_entry)
                db.session.commit()
                return True
           except Exception as e:
                db.session.rollback()
                return False
-            
+               
      def get_last_item():
           try:
-               last_item = db.session.query(Credentials).order_by(Credentials.id.desc()).first()
+               last_item = db.session.query(MoralisApiKey).order_by(MoralisApiKey.id.desc()).first()
                return last_item
           except Exception as e:
                print(f"An error occurred: {e}")
@@ -1027,7 +1076,7 @@ class Credentials (db.Model):
      def get_all_items():
           try:
                # Query all items
-               items = db.session.query(Credentials).all()
+               items = db.session.query(MoralisApiKey).all()
                
                # Return the list of items
                return items
@@ -1035,9 +1084,9 @@ class Credentials (db.Model):
                print(f"An error occurred: {e}")
                return None
 
-     def delete_credential(credentil_file_name):
+     def delete_Api(api_key):
           # Step 3: Query the database for the row with the given primary key
-          item = AvailableCoinSets.query.get(credentil_file_name)
+          item = AvailableCoinSets.query.get(api_key)
           
           # Step 4: Delete the row if it exists
           if item:
@@ -1049,47 +1098,6 @@ class Credentials (db.Model):
 
 
 ###############################################################################################################
-## Finder running
-class FinderRunningBreak (db.Model):
-     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-     running_status = db.Column(db.Boolean, nullable=False,default=False)  # Correctly define the boolean column
-
-     def add_item(value):
-          try:
-               new_entry = FinderRunningBreak(running_status=value)
-               db.session.add(new_entry)
-               db.session.commit()
-               return True
-          except Exception as e:
-               db.session.rollback()
-               return False
-               
-     def get_item(number):
-        item = FinderRunningBreak.query.get(number)
-        return item
-     
-     def update_item(number,status):
-          try:
-   
-               # Query the database
-               stmt = update(FinderRunningBreak).where(FinderRunningBreak.id == number).values(running_status=status)
-               result = db.session.execute(stmt)
-
-               # Commit the transaction
-               db.session.commit()
-
-
-          except SQLAlchemyError as e:
-               db.session.rollback()  # Rollback the transaction on error
-               return False
-
-          except Exception as e:
-               db.session.rollback()  # Rollback the transaction on error
-               print("Finder Running data table has an error")
-               return False
-          
-
-
 ## Gainers
 
 class Gainers(db.Model):
@@ -1299,6 +1307,7 @@ class Gainers(db.Model):
 class BackupFolder(db.Model):
      id = db.Column(db.Integer, primary_key=True, autoincrement=True)  # Primary Key
      ticker = db.Column(db.String(100), nullable=False)  # Ticker
+     set_number = db.Column(db.Integer, default =0)
      contract_address = db.Column(db.String(100), nullable=False)  # Contract Address
      searched_from_date_time = db.Column(db.String(100), nullable=False)  # From Date Time
      searched_to_date_time = db.Column(db.String(100), nullable=False)  # To Date Time
@@ -1312,12 +1321,13 @@ class BackupFolder(db.Model):
      priority = db.Column(db.String(10),nullable=False,default="no")
      txns =db.Column(db.Integer)
      file_name = db.Column(db.String(255), nullable=True)  # File Name
-     status = db.Column(db.Integer) # 0 - pending_folder , 1-added_folder , 2 - delete_folder
+     status = db.Column(db.Integer) # 0-partialy running ,1 - pending_folder , 2-added_folder , -1 - delete_folder
 
      def to_dict(self):
         return {
             'id': self.id,
             'ticker': self.ticker,
+            'set_number': self.set_number,
             'contract_address': self.contract_address,
             'searched_from_date_time': self.searched_from_date_time,
             'searched_to_date_time': self.searched_to_date_time,
@@ -1338,7 +1348,7 @@ class BackupFolder(db.Model):
     
 
      @staticmethod
-     def add_record(ticker, contract_address, searched_from_date_time, searched_to_date_time, 
+     def add_record(ticker,set_number, contract_address, searched_from_date_time, searched_to_date_time, 
                    from_signature, to_signature, from_block_timestamp, to_block_timestamp, 
                    low_value, peak_value, description, priority,txns, file_name, status):
         
@@ -1347,6 +1357,7 @@ class BackupFolder(db.Model):
             # Create a new record instance
             new_record = BackupFolder(
                 ticker=ticker,
+                set_number=set_number,
                 contract_address=contract_address,
                 searched_from_date_time=searched_from_date_time,
                 searched_to_date_time=searched_to_date_time,
@@ -1416,7 +1427,7 @@ class BackupFolder(db.Model):
      def get_all_sets_in_pending_folder():
           try:
                # Query to get all records where status equals 0 (pending folder)
-               pending_folders = BackupFolder.query.filter_by(status=0).order_by(BackupFolder.id.desc()).all()
+               pending_folders = BackupFolder.query.filter_by(status=1).order_by(BackupFolder.id.desc()).all()
                data_list = [folder.to_dict() for folder in pending_folders]
                if pending_folders:
                     return True, data_list, None  # Return the list of records
@@ -1446,6 +1457,27 @@ class BackupFolder(db.Model):
                message = "Database Exception error occured at update_status_by_id () method"
                return False,message
           
+     # Update status of a record based on the provided id
+     def update_set_number_by_id(folder_id, set_number):
+          try:
+               # Fetch the record by ID
+               folder = BackupFolder.query.get(folder_id)
+
+               if not folder:
+                    message= "This row Id data not found in data base"
+                    return False, message
+
+               # Update the status
+               folder.set_number = set_number
+               db.session.commit()  # Commit the change to the database
+               message = "Succesfully Update set number"
+               return True,message
+
+          except Exception as e:
+               message = "Database Exception error occured at update_status_by_id () method"
+               return False,message
+          
+          
 
      # Get file path by the provided ID
      def get_file_path_by_id(folder_id):
@@ -1463,4 +1495,21 @@ class BackupFolder(db.Model):
           except Exception as e:
                message = "Database Exception error occured at get_file_path_by_id () method"
                return False , message
-               
+          
+          
+     def get_row_id_from_set_number(set_number):
+          try:
+               # Fetch the record by set_number
+               row = BackupFolder.query.filter_by(set_number=set_number).first()
+
+               if not row:
+                    message = "error: row not found"
+                    return False, message
+
+               # Return the row ID
+               return True, row
+
+          except Exception as e:
+               message = f"Database exception error occurred: {str(e)}"
+               return False, message
+

@@ -1,6 +1,4 @@
 from website.modles import Gainers
-from website import db
-from flask import flash
 from sqlalchemy.exc import SQLAlchemyError
 
 def addGainers(contractAddress, walletAddress, ticker, gained_profit):

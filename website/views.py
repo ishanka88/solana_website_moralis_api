@@ -1,26 +1,19 @@
 
 from flask import Blueprint, render_template, request, flash, jsonify, send_file
 from website.methods import findTransactions, gainersMethods ,whalesCa, pairs,coinFiles
-import base58
-import re
-from datetime import datetime , timezone
-from website.modles import db,AvailableCoinSets, CoinTransactions ,Credentials,Pairs,Gainers,BackupFolder
-import os
+from datetime import datetime 
+from website.modles import db,AvailableCoinSets, CoinTransactions ,Pairs,Gainers,BackupFolder,MoralisApiKey
 import zipfile
 from website import db
-from flask_sqlalchemy import SQLAlchemy
 import pandas as pd
 import io
-from flask import current_app
-import threading
-import time 
 from werkzeug.utils import secure_filename
-import json
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request
 from flask import send_file
 import logging
 from sqlalchemy import inspect
+from config import Config
 
 
 
@@ -143,67 +136,67 @@ def finder():
 @views.route('/start-finding', methods=['POST'])
 def start_task():
 
-        data = request.get_json()
+    data = request.get_json()
 
-        contractAddress =data.get('contractAddress'),
-        fromDate=data.get('fromDate'),
-        fromHour=data.get('fromHour'),
-        fromMinute=data.get('fromMinute'),
-        fromSecond=data.get('fromSecond'),
-        toDate=data.get('toDate'),
-        toHour=data.get('toHour'),
-        toMinute=data.get('toMinute'),
-        toSecond=data.get('toSecond'),
-        priority=data.get('priority'),
-        ticker =data.get('ticker'),
-        lowValue=data.get('lowValue'),
-        description=data.get('description'),
-        peakValue=data.get('peakValue')
+    contractAddress =data.get('contractAddress')
+    fromDate=data.get('fromDate')
+    fromHour=data.get('fromHour')
+    fromMinute=data.get('fromMinute')
+    fromSecond=data.get('fromSecond')
+    toDate=data.get('toDate')
+    toHour=data.get('toHour')
+    toMinute=data.get('toMinute')
+    toSecond=data.get('toSecond')
+    priority=data.get('priority')
+    ticker =data.get('ticker')
+    lowValue=data.get('lowValue')
+    description=data.get('description')
+    peakValue=data.get('peakValue')
 
-        fromDate_str = fromDate[0]
-        start_date = datetime.strptime(fromDate_str, "%Y-%m-%d")
-        # Create a timedelta object
-        start_time_to_add = timedelta(hours=fromHour[0], minutes=fromMinute[0], seconds=fromSecond[0])
-        formatted_start_date = start_date + start_time_to_add
 
-        toDate_str = toDate[0]
-        start_date = datetime.strptime(toDate_str, "%Y-%m-%d")
-        # Create a timedelta object
-        start_time_to_add = timedelta(hours=toHour[0], minutes=toMinute[0], seconds=toSecond[0])
-        formatted_end_date = start_date + start_time_to_add
+    # Create a datetime object for the start date
+    fromDate_str = fromDate  # '2024-12-18'
+    start_date = datetime.strptime(fromDate_str, "%Y-%m-%d")
+    # Create a timedelta object to add the time (hour, minute, second)
+    start_time_to_add = timedelta(hours=fromHour, minutes=fromMinute, seconds=fromSecond)
+    # Combine the date and time
+    formatted_start_date = start_date + start_time_to_add
+    # Format the datetime object in the desired format
+    formatted_start_date_str = formatted_start_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
-        result =findTransactions.get_transactions_from_Date_and_Time(contractAddress,ticker,formatted_start_date,formatted_end_date, lowValue, peakValue, description,priority)
-        
-        return jsonify(result)
 
-        # # Define the time window start_date_time_to_add(optional)
-        # start_date = datetime(2024, 11, 24, 18, 50, 0)  # (Year, Month, Day, Hour, Minute, Second)
+    toDate_str = toDate
+    start_date = datetime.strptime(toDate_str, "%Y-%m-%d")
+    # Create a timedelta object
+    start_time_to_add = timedelta(hours=toHour, minutes=toMinute, seconds=toSecond)
+    formatted_end_date = start_date + start_time_to_add
+    formatted_end_date_str = formatted_end_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
-        # # Define the end date and time (e.g., 15th November 2024 at 6:00 PM)
-        # end_date = datetime(2024, 11, 24, 18, 52, 0)  # (Year, Month, Day, Hour, Minute, Second)
-        # responce = findTransactions.get_transactions_from_Date_and_Time(ticker,start_date,end_date)
 
- 
+    result =findTransactions.get_transactions_from_Date_and_Time(contractAddress,ticker,formatted_start_date_str,formatted_end_date_str, lowValue, peakValue, description,priority)
+    
+    return jsonify(result)
+
+    # # Define the time window start_date_time_to_add(optional)
+    # start_date = datetime(2024, 11, 24, 18, 50, 0)  # (Year, Month, Day, Hour, Minute, Second)
+
+    # # Define the end date and time (e.g., 15th November 2024 at 6:00 PM)
+    # end_date = datetime(2024, 11, 24, 18, 52, 0)  # (Year, Month, Day, Hour, Minute, Second)
+    # responce = findTransactions.get_transactions_from_Date_and_Time(ticker,start_date,end_date)
+
+
 
 # Route to stop the task (Cancel the running BigQuery job)
 @views.route('/stop-finding', methods=['POST'])
 def stop_task():
-    # Check if the job_id and client are available in thread-local storage
-    if hasattr(findTransactions.thread_data, 'job_id') and hasattr(findTransactions.thread_data, 'client'):
-        job_id = findTransactions.thread_data.job_id  # Retrieve the job_id from thread-local storage
-        client = findTransactions.thread_data.client  # Retrieve the client from thread-local storage
+    try:
+        Config.SHOULD_STOP = True
+    except Exception as e:
+        message ="Error - Stopping unsuccessful"
+        print (message)
+        flash (message,'error')
+        flash (f"{str(e)}")
 
-        # Call the cancel function with the retrieved client and job_id
-        result =findTransactions.cancel_bigquery_job(client, job_id)
-        if (result):
-            message = "Task cancelled Sucsessfully ."
-            return jsonify(True,message)
-        else:
-            message ="Error canceling the task."
-            return jsonify(False,message)
-    else:
-        message ="No task is currently running."
-        return jsonify(False,message)
 
 
 
@@ -219,31 +212,26 @@ def add_or_delete_prnding_folder_data():
     data = request.get_json()  # Get JSON payload
     action = data.get('action')
     rowId = data.get('rowId')
+    file_path = BackupFolder.get_file_path_by_id(rowId)
+    if not file_path[0]:
+        return jsonify(False,file_path[1]), 200
 
     if action == "add":
-        file_path = BackupFolder.get_file_path_by_id(rowId)
-        if file_path[0]:
-            response = coinFiles.addFromPendingFolder(file_path[1])
-            if response[0]:
-                BackupFolder.update_status_by_id(rowId,1)
-            
-            return jsonify(response), 200
-        else:
-            return jsonify(False,file_path[1]), 200
+        response = coinFiles.addFromPendingFolder(file_path[1],rowId)
+        if response[0]:
+            BackupFolder.update_status_by_id(rowId,2)
         
+        return jsonify(response), 200
+  
     elif action=="delete":
-        response= BackupFolder.update_status_by_id(rowId,2)
+        response = coinFiles.deleteFromPendingFolder(file_path[1])
+        if response[0]:
+            BackupFolder.update_status_by_id(rowId,3)
+        
         return jsonify(response), 200
 
     else:
         return jsonify(False,"Error - Front end Error"), 200
-
-
-   
-    
-
-        
-
 
 
 
@@ -295,37 +283,43 @@ def process_data_based_on_status(status):
     else:
         status_value = 2
 
-    transactions = AvailableCoinSets.get_coins_sets_by_status(status_value)
+    coins_data = AvailableCoinSets.get_coins_sets_by_status(status_value)
     
     # Convert the transactions to a list of dictionaries
     transactions_data = []
-    for txn in transactions:
-        if txn.low_value != 0:
-                profit = round((txn.peak_value - txn.low_value) * 100 / txn.low_value)
+    for coin in coins_data:
+        if coin.low_value != 0:
+                profit = round((coin.peak_value - coin.low_value) * 100 / txn.low_value)
         else:
                 profit = 0  # Or some other value indicating undefined profit
 
-        from_date = datetime.fromtimestamp(txn.from_timestamp, tz=timezone.utc)
-        to_date = datetime.fromtimestamp(txn.to_timestamp,  tz=timezone.utc)
-        valid_tx_count = txn.tx_count - txn.fake_transactions_count
+
+        from_dt = datetime.strptime(coin.from_timestamp, '%Y-%m-%dT%H:%M:%S.%fZ')
+        # Format to desired output
+        from_date = from_dt.strftime('%Y-%m-%d %H:%M:%S UTC')
+
+        to_dt = datetime.strptime(coin.to_timestamp, '%Y-%m-%dT%H:%M:%S.%fZ')
+        # Format to desired output
+        to_date = to_dt.strftime('%Y-%m-%d %H:%M:%S UTC')
+
+        valid_tx_count = coin.tx_count - coin.fake_transactions_count
         
         transactions_data.append({
-            'set_number': txn.set_number,
-            'ticker': txn.ticker,
-            'priority':txn.priority,
-            'description': txn.description,
+            'set_number': coin.set_number,
+            'ticker': coin.ticker,
+            'priority':coin.priority,
+            'description': coin.description,
             'from_date': from_date,
             'to_date': to_date,
-            'txn_count': txn.tx_count,
+            'txn_count': coin.tx_count,
             'valid_txn_count': valid_tx_count,
-            'wallet_transfers_count' : txn.wallet_transfers_count,
-            'uni_wallets_count': txn.uni_wallet_count,
-            'buy_uni_wallet_count': txn.buy_uni_wallet_count,
-            'sell_uni_wallet_count':txn.sell_uni_wallet_count,
-            'status': txn.status,
-            'to_signature': txn.to_signature,
-            'from_signature': txn.from_signature,
-            'contract_adress': txn.contract_address,
+            'uni_wallets_count': coin.uni_wallet_count,
+            'buy_uni_wallet_count': coin.buy_uni_wallet_count,
+            'sell_uni_wallet_count':coin.sell_uni_wallet_count,
+            'status': coin.status,
+            'to_signature': coin.to_signature,
+            'from_signature': coin.from_signature,
+            'contract_adress': coin.contract_address,
             'profit' : profit
 
             
@@ -342,169 +336,103 @@ def action():
     return jsonify({'data': response[0], 'action':response[1],'status': response[2]})  # Removed trailing comma
 
 def findAction(action, set_number):
-    if action == "delete":
-        update = CoinTransactions.delete_items(set_number)
-        if update:
-            check=Pairs.is_set_number_in_pairs(set_number)
-            if check :
-                Pairs.delete_pairs_which_include_set_number(set_number)
-            update = AvailableCoinSets.delete_item(set_number)
+    try:
+        if action == "delete":
+            update = CoinTransactions.delete_items(set_number)
             if update:
-                return update, action, "Delete Sucsess" 
+                check=Pairs.is_set_number_in_pairs(set_number)
+                if check :
+                    Pairs.delete_pairs_which_include_set_number(set_number)
+                update = AvailableCoinSets.delete_item(set_number)
+                if update:
+                    responce_one=BackupFolder.get_row_id_from_set_number(set_number)
+                    if not responce_one[0]:
+                        return update,action, responce_one[1]
+                    row = responce_one[1]
+                    file_path = row.file_name
+                    response = coinFiles.deleteFromAddedFolder(file_path)
+                    if response[0]:
+                        row_id =row.id
+                        BackupFolder.update_status_by_id(row_id,3)
+                        BackupFolder.update_set_number_by_id(row_id,0)
+
+                        return update, action, "Delete Sucsess" 
+                    return update, action, "No row available" 
+                else:
+                    return update, action, "Try again - All Transactions Deleted but Coin not deleted in database"
             else:
-                return update, action, "Try again - All Transactions Deleted but Coin not deleted in database"
-        else:
-            return update, action,"Error - Try again"
+                return update, action,"Error - Try again"
 
-    if action == "info":
-        data = AvailableCoinSets.get_item(set_number)
-        coin_data = []
-        coin_data.append({
-            'set_number': data.set_number,
-            'contract_address': data.contract_address,
-            'ticker': data.ticker,
-            'priority':data.priority,
-            'description': data.description,
-            'low_value':data.low_value,
-            'peak_value': data.peak_value,
-            'from_timestamp': data.from_timestamp,
-            'to_timestamp': data.to_timestamp,
-            'from_signature': data.from_signature,
-            'current_signature': data.current_signature,
-            'to_signature': data.to_signature,
-            'txn_count': data.tx_count,
-            'valid_tx_count': data.valid_tx_count,
-            'uni_wallets_count': data.uni_wallet_count,
-            'status': data.status
-        })
-        return coin_data, action, "Done"
-    if action == "pending-to-active":
-        update=AvailableCoinSets.update_status(set_number,2) ## 2-active
-        if update:
-            return update, action, "Sucsess"
-        else:
-            return update, action, "Error -Update Unsuccesfull"
+        if action == "info":
+            data = AvailableCoinSets.get_item(set_number)
+            coin_data = []
+            coin_data.append({
+                'set_number': data.set_number,
+                'contract_address': data.contract_address,
+                'ticker': data.ticker,
+                'priority':data.priority,
+                'description': data.description,
+                'low_value':data.low_value,
+                'peak_value': data.peak_value,
+                'from_timestamp': data.from_timestamp,
+                'to_timestamp': data.to_timestamp,
+                'from_signature': data.from_signature,
+                'current_signature': data.current_signature,
+                'to_signature': data.to_signature,
+                'txn_count': data.tx_count,
+                'valid_tx_count': data.valid_tx_count,
+                'uni_wallets_count': data.uni_wallet_count,
+                'status': data.status
+            })
+            return coin_data, action, "Done"
+        if action == "pending-to-active":
+            update=AvailableCoinSets.update_status(set_number,2) ## 2-active
+            if update:
+                return update, action, "Sucsess"
+            else:
+                return update, action, "Error -Update Unsuccesfull"
+            
+        if action == "active-to-pending":
+            update=AvailableCoinSets.update_status(set_number,1) ## 1-pending
+            if update:
+                return update, action, "Sucsess" 
+            else:
+                return update, action, "Error - Update Unsuccesfull- try again"
         
-    if action == "active-to-pending":
-        update=AvailableCoinSets.update_status(set_number,1) ## 1-pending
-        if update:
-            return update, action, "Sucsess" 
-        else:
-            return update, action, "Error - Update Unsuccesfull- try again"
-    
-    if action == "running-to-pending":
-        update=AvailableCoinSets.update_status(set_number,1) ## 1-pending
-        if update:
-            return update, action, "Sucsess" 
-        else:
-            return update, action, "Error - Update Unsuccesfull- try again"
-        
-
+        if action == "running-to-pending":
+            update=AvailableCoinSets.update_status(set_number,1) ## 1-pending
+            if update:
+                return update, action, "Sucsess" 
+            else:
+                return update, action, "Error - Update Unsuccesfull- try again"
+            
+    except Exception as e:
+        print (str(e))
 
 ###########################################
 
-UPLOAD_FOLDER = 'credential_folder'
-ALLOWED_EXTENSIONS = {'json'}
-
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-@views.route('/credential_value', methods=['POST'])
-def getCredentials():
-    data = request.get_json()  # Get JSON payload
-
-    action = data.get('action')
-    new_credential_file_name = data.get('file_name')
-    new_credential_file_data = data.get('file_data')  # File content as a string
-
-    current_credential = Credentials.get_last_item()
-
+@views.route('/api_value', methods=['GET'])
+def getApi():
+    action = request.args.get('action')
+    new_api_key = request.args.get('api_key')
+    current_api = MoralisApiKey.get_last_item()
+    ## take api key to show in ui
     if action == "get":
-        if current_credential:
-            return jsonify({'data': current_credential.credentil_file_name})
+
+        if current_api :
+            return jsonify({'data': current_api.api_key}) 
         else:
-            return jsonify({'data': "Null"})  # No credential available
+            return jsonify({'data': "Null"}) 
 
-    if action == "add":
-        try:
-            if new_credential_file_name and new_credential_file_data and allowed_file(new_credential_file_name):
-                # Sanitize the filename
-                filename = secure_filename(new_credential_file_name)
-                file_path = os.path.join(UPLOAD_FOLDER, filename)
-
-                # If the file already exists, remove it before saving the new one
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-
-                # Save the file content as a .json file
-                with open(file_path, 'w') as json_file:
-                    json.dump(json.loads(new_credential_file_data), json_file)
-
-                # Store the file name in the database or model
-                response = Credentials.add_credential(filename)
-
-                if response:
-                    message="Success"
-                    return jsonify({'data': filename , "message":message})
-                else:
-                    message="Error - Failed to add the credential"
-                    return jsonify({'data': current_credential.credential_file_name if current_credential else "Null" ,"message":message})
-
-            else:
-                message="Invalid file type or missing file data"
-                return jsonify({'data': "Null", "message":message})
-
-        except Exception as e:
-            message=f"Error - Failed to add: {str(e)}"
-            return jsonify({'data': current_credential.credential_file_name if current_credential else "Null" , "message":message})
+    if action == "add" :
+        response =MoralisApiKey.add_api(new_api_key)
+        if response :
+            return jsonify({'data': new_api_key})
+        else :
+            flash("Error- failed to add")
+            return jsonify({'data': current_api.api_key}) 
 
 
-# @views.route('/credential_value', methods=['GET'])
-# def getCredentials():
-#     action = request.args.get('action')
-#     new_credential = request.args.get('credential_file_name')
-#     current_credential = Credentials.get_last_item()
-#     ## take Credential key to show in ui
-#     if action == "get":
-#         if current_credential :
-#             return jsonify({'data': current_credential.credentil_file_name}) 
-#         else:
-#             return jsonify({'data': "Null"}) 
-
-#     if action == "add" :
-#         try:
-#             if not os.path.exists("credential_folder"):
-#                     print("credential_folder  does not exist, creating it...")
-#                     os.makedirs("credential_folder")
-            
-#             file_name = new_credential.filename
-#             print(file_name)
-#             file_path = os.path.join("credential_folder", file_name)
-#             new_credential.save(file_path)
-
-#             response =Credentials.add_credential(file_name)
-
-#             if response :
-#                 return jsonify({'data': file_name})
-#             else :
-#                 flash("Error- failed to add")
-#                 if current_credential == None:
-#                     return jsonify({'data': "Null"}) 
-#                 else :
-#                     return jsonify({'data': current_credential}) 
-    
-#         except:
-#             flash("Error- failed to add")
-#             if current_credential == None:
-#                     return jsonify({'data': "Null"}) 
-#             else :
-#                     return jsonify({'data': current_credential}) 
-
-
- 
 ###############################################################
 
 @views.route('/merge', methods=['GET'])
@@ -673,6 +601,39 @@ def export_data():
         # Log the error and return a response
         logging.error(f"Error while exporting data to CSV: {e}")
         return jsonify({"error": "An error occurred while exporting data."}), 500
+
+
+#############################################################
+
+
+@views.route('/get-transactions-data', methods=['GET'])
+def getTransactionsDetails():
+    try:
+        # Get 'setNumber' from the request's query parameters
+        setNumber = request.args.get('setNumber')
+
+        # Convert setNumber to integer, handling the case when it's not a valid number
+        try:
+            setNumber = int(setNumber)
+        except ValueError:
+            return jsonify({'status': False, 'message': 'Invalid setNumber value'}), 400
+
+        # Fetch transactions by setNumber using the class method
+        transactions = CoinTransactions.get_transactions_by_set_number(setNumber)
+
+        # Check if transactions exist
+        if transactions:
+            # Convert transactions to list of dictionaries
+            transaction_list = [transaction.to_dict() for transaction in transactions]
+            return jsonify({'status': True, 'transactions': transaction_list})
+        else:
+            return jsonify({'status': False, 'message': 'No transactions found for the given setNumber'}), 404
+
+    except Exception as e:
+        # Print or log the error message for debugging purposes
+        print(f"Error: {e}")
+        return jsonify({'status': False, 'message': 'An error occurred while processing your request'}), 500
+
 
 
 ###############################################################################################
