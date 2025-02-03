@@ -563,7 +563,7 @@ function renderTable(data, page = 1,status) {
           </td>
           ${priority_html}
           <td>${row.set_number}</td>
-          <td>${row.discription}</td>
+          <td>${row.description}</td>
           <td > 
               <div class="d-flex justify-content-around">
                   <div class="mr-3">

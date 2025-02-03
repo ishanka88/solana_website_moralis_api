@@ -289,7 +289,7 @@ def process_data_based_on_status(status):
     transactions_data = []
     for coin in coins_data:
         if coin.low_value != 0:
-                profit = round((coin.peak_value - coin.low_value) * 100 / txn.low_value)
+                profit = round((coin.peak_value - coin.low_value) * 100 / coin.low_value)
         else:
                 profit = 0  # Or some other value indicating undefined profit
 

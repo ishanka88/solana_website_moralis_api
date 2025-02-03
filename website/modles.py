@@ -634,13 +634,21 @@ class CoinTransactions (db.Model): #coinTransactions
         in a single transaction. Rolls back if any primary key conflict or other error occurs.
         """
         try:
-            # Bulk insert all transactions at once
-            db.session.bulk_save_objects(transaction_data)
-            db.session.commit()  # Commit the transaction
-            message = "Transactions added successfully"
-            return True, message
+                     # Merge transactions (upsert) instead of bulk insert
+          for transaction in transaction_data:
+               db.session.add(transaction)
+
+          db.session.commit()  # Commit the transaction
+          message = "Transactions added or updated successfully"
+          return True, message
+          #   # Bulk insert all transactions at once
+          #   db.session.bulk_save_objects(transaction_data)
+          #   db.session.commit()  # Commit the transaction
+          #   message = "Transactions added successfully"
+          #   return True, message
 
         except IntegrityError as e:
+            
             db.session.rollback()  # Rollback in case of primary key conflict or any integrity error
             message = f"Error - Same Signature conflict or other integrity issue: {str(e)}"
             print(str(e))
@@ -652,6 +660,9 @@ class CoinTransactions (db.Model): #coinTransactions
             print(str(e))
             return False, message
 
+     # Check if a signature already exists
+     def check_signature_exists(signature):
+          return db.session.query(CoinTransactions).filter_by(signature=signature).first() is not None
 
      def get_overlapping_fee_payers_from_a_pair(set1, set2):
      # Retrieve priorities for the given sets

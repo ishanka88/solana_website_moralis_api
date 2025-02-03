@@ -217,7 +217,28 @@ function tableTwoRenderTable(data, page = 1) {
         tr.classList.add('table-danger');
         tr.innerHTML = `
             <th scope="row">${row_number}</th>
-            <td> <span class="fw-bold">  ${row.whale_address} </span></td>
+            <td>
+                <div class="d-flex justify-content-between" >
+                    <div class="fw-bold">  
+                        ${row.whale_address} 
+                    </div>
+                    <div class="d-flex align-items-start">
+                        <div class="icon-link-hover "> 
+                            <a class="icon-link icon-link-hover" href="https://solscan.io/account/${row.whale_address}#defiactivities" target="_blank">
+                                <i class="bi bi-upc-scan fs-5"></i>
+                                <svg class="bi" aria-hidden="true"><use xlink:href="#arrow-right"></use></svg>
+                            </a>
+                        </div>
+                        <div class="icon-link-hover"> 
+                            <a class="icon-link icon-link-hover" href="https://dexcheck.ai/app/wallet-analyzer/${row.whale_address}" target="_blank">
+                                <i class="bi bi-cash-coin fs-4"></i>
+                                <svg class="bi" aria-hidden="true"><use xlink:href="#arrow-right"></use></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+             
+            </td>
             <td>
                 <span class="d-flex justify-content-center fw-bold">
                     ${row.total_sets.length}
@@ -258,6 +279,7 @@ function tableTwoRenderTable(data, page = 1) {
                 </td>
                 <td></td>
             `;
+            
             tableBody.appendChild(coinTr);
         });
 

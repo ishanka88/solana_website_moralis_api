@@ -97,6 +97,29 @@ def addCoinTransactions(file_all_data):
 
 
 
+            if not fee_payer:  # Check for empty or None signature
+                print(f"transaction with empty or None signature: {row}")
+                
+            
+            if not block_timestamp:  # Check for empty or None signature
+                print(f"transaction with empty or None signature: {row}")
+                
+            
+            if not bought_token:  # Check for empty or None signature
+                print(f"transaction with empty or None signature: {row}")
+            
+            if not sold_token:  # Check for empty or None signature
+                print(f"transaction with empty or None signature: {row}")
+            
+            if not sub_category:  # Check for empty or None signature
+                print(f"transaction with empty or None signature: {row}")
+                           
+            
+            if not status:  # Check for empty or None signature
+                print(f"transaction with empty or None signature: {row}")
+                           
+
+
             # Create the CoinTransactions object and append it to the list
             transaction = CoinTransactions(
                 signature=signature,
