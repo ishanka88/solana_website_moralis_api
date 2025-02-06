@@ -25,8 +25,8 @@ class AvailableCoinSets(db.Model): ## searchedCoins
      sell_uni_wallet_count=db.Column(db.Integer, nullable=False,default=0)
      low_value = db.Column(db.Float, nullable=False, default=0.0)  # Corrected `defaut` to `default` and added `0.0`
      peak_value = db.Column(db.Float, nullable=False, default=0.0)
-     category_index = db.Column(db.Integer)
-     status = db.Column(db.Integer,nullable=False)  ## 0 - running , 1-pending , 2-active
+     category_index = db.Column(db.Integer)  ## 0- PumpfunBonding Gained Coin , 1-PumpfunBonding Checking Coin, 2-Gained Coin, 3-  Checking Coin
+     status = db.Column(db.Integer,nullable=False)  ## 0- running , 1-pending , 2-active
 
 
 
@@ -61,7 +61,7 @@ class AvailableCoinSets(db.Model): ## searchedCoins
                     low_value=data['low_value'],
                     peak_value=data['peak_value'],
                     status=data['status'],
-                    category_inde=data['category_index']
+                    category_index=data['category_index']
                )
 
                # Add the new object to the session and commit
@@ -650,6 +650,7 @@ class CoinTransactions (db.Model): #coinTransactions
           #   return True, message
 
         except IntegrityError as e:
+   
             
             db.session.rollback()  # Rollback in case of primary key conflict or any integrity error
             message = f"Error - Same Signature conflict or other integrity issue: {str(e)}"

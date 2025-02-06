@@ -321,7 +321,8 @@ def process_data_based_on_status(status):
             'to_signature': coin.to_signature,
             'from_signature': coin.from_signature,
             'contract_adress': coin.contract_address,
-            'profit' : profit
+            'profit' : profit,
+            'category_index' : coin.category_index
 
             
         })

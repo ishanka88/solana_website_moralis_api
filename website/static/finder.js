@@ -1,6 +1,7 @@
 const rowsPerPage = 10;
 let currentPage = 1;
 current_status = "active"
+coin_sets_data= null
 
 
 function addPendingSetToActive(rowId){
@@ -385,9 +386,9 @@ function setStatus(set_status) {
   })
   .then(response => response.json())
   .then(data => {
-        data_set = data.data
+        coin_sets_data = data.data
         tableInfoUpdate(data.coins_count,data.set_counts , data.status_data)
-        renderTable(data.data,page = 1,set_status) // Access the 'data' key in the response
+        checkCategories(set_status)
   })
   .catch(error => alert('Error fetching data:', error));
 }
@@ -588,6 +589,7 @@ function renderTable(data, page = 1,status) {
           <td class="text-success fw-bold">${row.profit} %</td>
           <td>${row.txn_count}</td>
           <td>${row.valid_txn_count}</td>
+          <td>${row.txn_count-row.valid_txn_count}</td>
           <td>${row.uni_wallets_count}</td>
           <td class="text-success fw-bold">${row.buy_uni_wallet_count}</td>
           <td class="text-danger fw-bold">${row.sell_uni_wallet_count}</td>
@@ -636,10 +638,10 @@ function renderTable(data, page = 1,status) {
 document.getElementById('searchInput').addEventListener('input', function(event) {
         const searchTerm = event.target.value.toLowerCase();
         if (searchTerm !== "") {
-            filteredData = data_set.filter(row => row.ticker.toLowerCase().includes(searchTerm));
+            filteredData = coin_sets_data.filter(row => row.ticker.toLowerCase().includes(searchTerm));
             renderTable(filteredData, 1, current_status);
         } else {
-            renderTable(data_set, 1, current_status);
+            renderTable(coin_sets_data, 1, current_status);
         }
       })
 
@@ -1453,3 +1455,175 @@ function convertToUTCFormat(dateString) {
 
 
 /////////////////////////////////////////////////////////////////////////////////
+
+const categoryRadioNew1 = document.getElementById('categoryRadioNew1');
+const categoryRadioNew2 = document.getElementById('categoryRadioNew2');
+const categoryRadioNew3 = document.getElementById('categoryRadioNew3');
+const categoryRadioNew4 = document.getElementById('categoryRadioNew4');
+
+// Initially set the checked state
+categoryRadioNew1.checked = true; // Or false depending on the initial state
+categoryRadioNew2.checked = false;
+categoryRadioNew3.checked = true;
+categoryRadioNew4.checked = false;
+
+// Initialize variables to store checked status
+let categoryRadioNew1IsChecked = categoryRadioNew1.checked;
+let categoryRadioNew2IsChecked = categoryRadioNew2.checked;
+let categoryRadioNew3IsChecked = categoryRadioNew3.checked;
+let categoryRadioNew4IsChecked = categoryRadioNew4.checked;
+
+// Event listener for categoryRadioNew1
+categoryRadioNew1.addEventListener('click', function() {
+    categoryRadioNew1IsChecked = !categoryRadioNew1IsChecked; // Toggle the checked status
+    categoryRadioNew1.checked = categoryRadioNew1IsChecked; // Update the radio button state
+    checkCategories(current_status);
+});
+
+// Event listener for categoryRadioNew2
+categoryRadioNew2.addEventListener('click', function() {
+    categoryRadioNew2IsChecked = !categoryRadioNew2IsChecked; // Toggle the checked status
+    categoryRadioNew2.checked = categoryRadioNew2IsChecked; // Update the radio button state
+    checkCategories(current_status);
+});
+
+// Event listener for categoryRadioNew3
+categoryRadioNew3.addEventListener('click', function() {
+    categoryRadioNew3IsChecked = !categoryRadioNew3IsChecked; // Toggle the checked status
+    categoryRadioNew3.checked = categoryRadioNew3IsChecked; // Update the radio button state
+    checkCategories(current_status);
+});
+
+// Event listener for categoryRadioNew4
+categoryRadioNew4.addEventListener('click', function() {
+    categoryRadioNew4IsChecked = !categoryRadioNew4IsChecked; // Toggle the checked status
+    categoryRadioNew4.checked = categoryRadioNew4IsChecked; // Update the radio button state
+    checkCategories(current_status);
+});
+
+function checkCategories(status) {
+    let new_coin_sets_data = []; // Initialize an empty array for new filtered data
+
+    for (let coin of coin_sets_data) { // Loop through the array of coin sets
+        let category_index = coin["category_index"]; // Get the category index of the coin
+
+        // Check the category index and radio button status
+        if (category_index === 0 && categoryRadioNew1IsChecked === true) {
+            new_coin_sets_data.push(coin); // Add the coin if the category matches and radio is checked
+        } else if (category_index === 1 && categoryRadioNew2IsChecked === true) {
+            new_coin_sets_data.push(coin); // Add the coin for category 1
+        } else if (category_index === 2 && categoryRadioNew3IsChecked === true) {
+            new_coin_sets_data.push(coin); // Add the coin for category 2
+        } else if (category_index === 3 && categoryRadioNew4IsChecked === true) {
+            new_coin_sets_data.push(coin); // Add the coin for category 3
+        }
+    }
+
+    // Call renderTable with the filtered data
+    renderTable(new_coin_sets_data, 1, status);
+}
+
+
+// const categoryRadioNew1 = document.getElementById('categoryRadioNew1');
+// // Initially uncheck the radio button (false is used here)
+// categoryRadioNew1.checked = true;
+// // Variable to store the checked status
+// let categoryRadioNew1IsChecked = categoryRadioNew1.checked;
+// // Add an event listener to detect changes when the radio button is clicked
+// categoryRadioNew1.addEventListener('click', function() {
+//     // Toggle the isChecked value
+//     if (categoryRadioNew1IsChecked) {
+//         // If checked, uncheck it
+//         categoryRadioNew1.checked = false;
+//         categoryRadioNew1IsChecked = false; // Update the status to unchecked
+//     } else {
+//         // If unchecked, check it
+//         categoryRadioNew1.checked = true;
+//         categoryRadioNew1IsChecked = true; // Update the status to checked
+//     }
+//     checkCategories(current_status)
+// });
+
+// const categoryRadioNew2 = document.getElementById('categoryRadioNew2');
+// // Initially uncheck the radio button (false is used here)
+// categoryRadioNew2.checked = false;
+// // Variable to store the checked status
+// let categoryRadioNew2IsChecked = categoryRadioNew2.checked;
+// // Add an event listener to detect changes when the radio button is clicked
+// categoryRadioNew2.addEventListener('click', function() {
+//     // Toggle the isChecked value
+//     if (categoryRadioNew2IsChecked) {
+//         // If checked, uncheck it
+//         categoryRadioNew2.checked = false;
+//         categoryRadioNew2IsChecked = false; // Update the status to unchecked
+//     } else {
+//         // If unchecked, check it
+//         categoryRadioNew2.checked = true;
+//         categoryRadioNew2IsChecked = true; // Update the status to checked
+//     }
+//     checkCategories(current_status)
+// });
+
+// const categoryRadioNew3 = document.getElementById('categoryRadioNew3');
+// // Initially uncheck the radio button (false is used here)
+// categoryRadioNew3.checked = true;
+// // Variable to store the checked status
+// let categoryRadioNew3IsChecked = categoryRadioNew3.checked;
+// // Add an event listener to detect changes when the radio button is clicked
+// categoryRadioNew3.addEventListener('click', function() {
+//     // Toggle the isChecked value
+//     if (categoryRadioNew3IsChecked) {
+//         // If checked, uncheck it
+//         categoryRadioNew3.checked = false;
+//         categoryRadioNew3IsChecked = false; // Update the status to unchecked
+//     } else {
+//         // If unchecked, check it
+//         categoryRadioNew3.checked = true;
+//         categoryRadioNew3IsChecked = true; // Update the status to checked
+//     }
+//     checkCategories(current_status)
+// });
+
+// const categoryRadioNew4 = document.getElementById('categoryRadioNew4');
+// // Initially uncheck the radio button (false is used here)
+// categoryRadioNew4.checked = false;
+// // Variable to store the checked status
+// let categoryRadioNew4IsChecked = categoryRadioNew4.checked;
+// // Add an event listener to detect changes when the radio button is clicked
+// categoryRadioNew4.addEventListener('click', function() {
+//     // Toggle the isChecked value
+//     if (categoryRadioNew4IsChecked) {
+//         // If checked, uncheck it
+//         categoryRadioNew4.checked = false;
+//         categoryRadioNew4IsChecked = false; // Update the status to unchecked
+//     } else {
+//         // If unchecked, check it
+//         categoryRadioNew4.checked = true;
+//         categoryRadioNew4IsChecked = true; // Update the status to checked
+//     }
+//     checkCategories(current_status)
+// });
+
+
+// function checkCategories(status) {
+//     let new_coin_sets_data = []; // Initialize an empty array for new filtered data
+
+//     for (let coin of coin_sets_data) { // Loop through the array of coin sets
+//         let category_index = coin["category_index"]; // Get the category index of the coin
+
+//         // Check the category index and radio button status
+//         if (category_index === 0 && categoryRadioNew1IsChecked === true) {
+//             new_coin_sets_data.push(coin); // Add the coin if the category matches and radio is checked
+//         } else if (category_index === 1 && categoryRadioNew2IsChecked === true) {
+//             new_coin_sets_data.push(coin); // Add the coin for category 1
+//         } else if (category_index === 2 && categoryRadioNew3IsChecked === true) {
+//             new_coin_sets_data.push(coin); // Add the coin for category 2
+//         } else if (category_index === 3) {
+//             new_coin_sets_data.push(coin); // Add the coin for the default category
+//         }
+//     }
+
+//     // Call renderTable with the filtered data
+//     renderTable(new_coin_sets_data, 1, status);
+// }
+

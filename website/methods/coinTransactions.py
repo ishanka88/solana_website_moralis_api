@@ -6,7 +6,31 @@ from website.methods import findTransactions
 
 def addCoinTransactions(file_all_data):
     try:
+        # Access the 'data' attribute (which is a list of transactions)
+        data = file_all_data["data"]
+
+        #get duplicates
+        # Extracting the transaction hashes into a listclear
+        transaction_hashes = [txn['transactionHash'] for txn in data]
+
+        # Finding duplicates using a set
+        unique_hashes = set(transaction_hashes)
+
+        # Checking if there are duplicates
+        if len(transaction_hashes) != len(unique_hashes):
+            print("There are duplicates!")
+            # Find the duplicates
+            duplicates = set([hash for hash in transaction_hashes if transaction_hashes.count(hash) > 1])
+            
+        else:
+            duplicates={}
+            print("No duplicates found.")
         # Extract necessary data from file_all_data (assuming it's a dictionary)
+
+        added_duplicates=[]
+
+
+
         meme_token_address = file_all_data["contract_address"]
 
         ticker = file_all_data["ticker"]
@@ -20,15 +44,13 @@ def addCoinTransactions(file_all_data):
         priority = file_all_data["priority"]
         category_index = file_all_data["category_index"]
 
-        # Access the 'data' attribute (which is a list of transactions)
-        data = file_all_data["data"]
 
         transactions_count = 0
         fake_transactions_count = 0
         buy_transactions_count = 0
         sell_transactions_count = 0
 
-        Transactions_list = []
+        transactions_list = []
 
         max_set_number = AvailableCoinSets.get_max_set_number()  # Get the max set number
         set_number = (max_set_number + 1) if max_set_number is not None else 1  # Increment by 1 or set to 1 if None
@@ -75,8 +97,17 @@ def addCoinTransactions(file_all_data):
             #     "totalValueUsd": 598.477909439
             # }
 
-            transactions_count += 1
             signature = row["transactionHash"]
+            status = row["transactionType"]
+
+            if signature in added_duplicates:
+                continue
+            else:
+                if signature in duplicates:
+                    added_duplicates.append(signature)
+                    fake_transactions_count +=1
+                    status = "fake"
+
             fee_payer = row["walletAddress"]
             block_timestamp = row["blockTimestamp"]
 
@@ -86,7 +117,6 @@ def addCoinTransactions(file_all_data):
             sold_token = row["sold"]["symbol"]
             sold_token_amount = row["sold"]["amount"]
             
-            status = row["transactionType"]
             sub_category = row["subCategory"]
 
             if bought_token != ticker and sold_token != ticker:
@@ -94,9 +124,7 @@ def addCoinTransactions(file_all_data):
             
             if bought_token == ticker and sold_token == ticker:
                 fake_transactions_count +=1
-            
-
-
+    
 
             if not fee_payer:  # Check for empty or None signature
                 print(f"transaction with empty or None signature: {row}")
@@ -118,8 +146,9 @@ def addCoinTransactions(file_all_data):
             
             if not status:  # Check for empty or None signature
                 print(f"transaction with empty or None signature: {row}")
-                           
 
+
+            transactions_count += 1
 
             # Create the CoinTransactions object and append it to the list
             transaction = CoinTransactions(
@@ -135,11 +164,11 @@ def addCoinTransactions(file_all_data):
                 set_number=set_number
             )
 
-            Transactions_list.append(transaction)
+            transactions_list.append(transaction)
 
 
         # Add the list of transactions to the database using bulk insert
-        response = CoinTransactions.add_transactions_to_db(Transactions_list)
+        response = CoinTransactions.add_transactions_to_db(transactions_list)
         if response[0]:
             # Fetch counts for unique wallets for each transaction status
             buy_transactions_count = CoinTransactions.get_buy_txn_count(set_number)
