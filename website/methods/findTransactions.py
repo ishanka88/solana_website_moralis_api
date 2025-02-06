@@ -35,7 +35,7 @@ def fetch_data(api_key, contract_address, from_date, to_date, cursor=None):
     
 
 def save_data_into_json_file(status,final_data,ticker,contract_address,cursor,fromDateTime,toDateTime,
-                          low_value,peak_value,description,priority):
+                          low_value,peak_value,description,priority,category_index):
     
 
     main_folder = 'coin_data_from_moralis'
@@ -72,7 +72,9 @@ def save_data_into_json_file(status,final_data,ticker,contract_address,cursor,fr
         "description": description,
         "txns":txns,
         "priority": priority,
+        "category_index" : category_index,
         "data": final_data
+        
     }
 
     file_name = f"{contract_address}_{from_block_timestamp}_to_{to_block_timestamp}.json"
@@ -96,7 +98,7 @@ def save_data_into_json_file(status,final_data,ticker,contract_address,cursor,fr
     if status:
         write_to_json(pending_database_file_path, coin_data)
 
-        addDetails =BackupFolder.add_record(ticker,set_number,contract_address,fromDateTime,toDateTime,from_signature,to_signature,from_block_timestamp,to_block_timestamp,low_value,peak_value,description,priority,txns,file_name,1)
+        addDetails =BackupFolder.add_record(ticker,set_number,contract_address,fromDateTime,toDateTime,from_signature,to_signature,from_block_timestamp,to_block_timestamp,low_value,peak_value,description,priority,txns,file_name,1,category_index)
         if addDetails :
             message = "Successful - json file added to the pending folder"
             print(message)
@@ -111,7 +113,7 @@ def save_data_into_json_file(status,final_data,ticker,contract_address,cursor,fr
         
     else:
         write_to_json(partialy_ran_database_file_path, coin_data)
-        addDetails =BackupFolder.add_record(ticker,set_number,contract_address,fromDateTime,toDateTime,from_signature,to_signature,from_block_timestamp,to_block_timestamp,low_value,peak_value,description,priority,txns,file_name,0)
+        addDetails =BackupFolder.add_record(ticker,set_number,contract_address,fromDateTime,toDateTime,from_signature,to_signature,from_block_timestamp,to_block_timestamp,low_value,peak_value,description,priority,txns,file_name,0,category_index)
         if addDetails :
             message = "Unsuccessful - json file added to the partially ran folder"
             print(message)
@@ -126,7 +128,7 @@ def save_data_into_json_file(status,final_data,ticker,contract_address,cursor,fr
 
 
 
-def get_transactions_from_Date_and_Time(contract_address, ticker, fromDateTime, toDateTime, low_value, peak_value, description, priority):
+def get_transactions_from_Date_and_Time(contract_address, ticker, fromDateTime, toDateTime, low_value, peak_value, description, priority,category_index):
    
         try :
             Config.SHOULD_STOP = False
@@ -151,7 +153,7 @@ def get_transactions_from_Date_and_Time(contract_address, ticker, fromDateTime, 
                     print("Process stopped by user.")
                     flash("Process stopped by user.", 'error')
                     responce =save_data_into_json_file(False,final_data,ticker,contract_address,cursor,fromDateTime,toDateTime,
-                          low_value,peak_value,description,priority)
+                          low_value,peak_value,description,priority,category_index)
                 
                     print("Error: Partialy saved data")
                     flash("Partialy saved data",'error')
@@ -192,7 +194,7 @@ def get_transactions_from_Date_and_Time(contract_address, ticker, fromDateTime, 
                 flash(f"Found {txns} transactions for Coin: {contract_address}",'message')
 
                 responce =save_data_into_json_file(True,final_data,ticker,contract_address,cursor,fromDateTime,toDateTime,
-                          low_value,peak_value,description,priority)
+                          low_value,peak_value,description,priority,category_index)
                 
                 return responce
 
@@ -208,7 +210,7 @@ def get_transactions_from_Date_and_Time(contract_address, ticker, fromDateTime, 
         except Exception as e:
             if final_data:
                 responce=save_data_into_json_file(False,final_data,ticker,contract_address,cursor,fromDateTime,toDateTime,
-                          low_value,peak_value,description,priority)
+                          low_value,peak_value,description,priority,category_index)
                 
                 print("Error: Partialy saved data")
                 flash("Partialy saved data",'error')

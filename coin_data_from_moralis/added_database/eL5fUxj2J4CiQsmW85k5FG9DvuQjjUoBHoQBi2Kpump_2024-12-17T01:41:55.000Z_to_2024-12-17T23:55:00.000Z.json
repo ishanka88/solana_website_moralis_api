@@ -14,6 +14,7 @@
     "description": "pumpfun bonding",
     "txns": 2320,
     "priority": "buy",
+    "category_index":0,
     "data": [
         {
             "transactionHash": "3DFuj3ND1bNN1mwWM7fuGCDJzB6uzCKymDknFmW9iGXZQT9TwNbS1Rdb6rxVxUqK2VKMUisRxz4FDuFxua4qgEgj",

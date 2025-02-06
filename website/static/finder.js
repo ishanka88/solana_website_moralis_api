@@ -123,6 +123,7 @@ function addSets(){
     
 }
 
+
 function renderPendingTable(data, page = 1) {
     const tableBody = document.getElementById('pending_coins_tableBody');
     tableBody.innerHTML = '';
@@ -659,11 +660,12 @@ function checkFormData() {
         let peakValue = parseFloat($('#peakValue').val()); // Convert to number
         let lowValue = parseFloat($('#lowValue').val());   // Convert to number
         let description =$('#description').val();
-        let priority_value =$('#radio').val();
 
+        let category_str = ""
         
         // Retrieve the selected radio button value
         let priority = $('input[name="radio"]:checked').val(); // Get the value of the checked radio button
+        let category = $('input[name="categoryRadio"]:checked').val(); // Get the value of the checked radio button
 
         
         // Check for empty required fields
@@ -680,6 +682,23 @@ function checkFormData() {
         if ( priority === undefined){
             alert("Priority must be selected");
             return false
+        }
+
+
+        if ( category === undefined){
+            alert("Category must be selected");
+            return false
+        }else if (category==0) {
+            category_str = "PumpfunBonding Gained Coin"
+            
+        }else if(category==1){
+            category_str = "PumpfunBonding Checking Coin"
+        }else if(category==2){
+            category_str = "Gained Coin"
+
+        }else{
+            category_str = "Checking Coin"
+
         }
   
 
@@ -718,10 +737,21 @@ function checkFormData() {
               }
 
         }
+   
+
+        let Confirmation2 = confirm(` Please Check \n
+            Category - ${category_str}`)
+            
+        if (!Confirmation2) {
+            return false
+        }
+
 
         let finalConfirmation = confirm(` Please Check \n
             From -   ${fromDateInput}    ${fromHourInput.padStart(2, '0')} : ${fromMinuteInput.padStart(2, '0')} : ${fromSecondInput.padStart(2, '0')} \n
-            To      -   ${toDateInput}    ${toHourInput.padStart(2, '0')} : ${toMinuteInput.padStart(2, '0')} : ${toSecondInput.padStart(2, '0')} \n\n Are you sure to continue?`);
+            To      -   ${toDateInput}    ${toHourInput.padStart(2, '0')} : ${toMinuteInput.padStart(2, '0')} : ${toSecondInput.padStart(2, '0')}\n\n Are you sure to continue?`);
+
+            
         if (!finalConfirmation) {
             return false
         }
@@ -991,8 +1021,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ticker: formData.get('ticker'),
         lowValue: formData.get('lowValue'),
         description: formData.get('description'),
-        peakValue: formData.get('peakValue')
+        peakValue: formData.get('peakValue'),
+        category: formData.get('categoryRadio')
     };
+
 
     // Send data to the server
     fetch('/start-finding', {

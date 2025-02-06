@@ -25,6 +25,7 @@ class AvailableCoinSets(db.Model): ## searchedCoins
      sell_uni_wallet_count=db.Column(db.Integer, nullable=False,default=0)
      low_value = db.Column(db.Float, nullable=False, default=0.0)  # Corrected `defaut` to `default` and added `0.0`
      peak_value = db.Column(db.Float, nullable=False, default=0.0)
+     category_index = db.Column(db.Integer)
      status = db.Column(db.Integer,nullable=False)  ## 0 - running , 1-pending , 2-active
 
 
@@ -59,7 +60,8 @@ class AvailableCoinSets(db.Model): ## searchedCoins
                     sell_uni_wallet_count=data['sell_uni_wallet_count'],
                     low_value=data['low_value'],
                     peak_value=data['peak_value'],
-                    status=data['status']
+                    status=data['status'],
+                    category_inde=data['category_index']
                )
 
                # Add the new object to the session and commit
@@ -1332,7 +1334,8 @@ class BackupFolder(db.Model):
      priority = db.Column(db.String(10),nullable=False,default="no")
      txns =db.Column(db.Integer)
      file_name = db.Column(db.String(255), nullable=True)  # File Name
-     status = db.Column(db.Integer) # 0-partialy running ,1 - pending_folder , 2-added_folder , -1 - delete_folder
+     category_index = db.Column(db.Integer) # 0-PumpfunBonding Gained Coin ,1 - PumpfunBonding Checking Coin , 2- Gained Coin , 3 - Checking Coin
+     status = db.Column(db.Integer) # 0-partialy running ,1 - pending_folder , 2-added_folder , 3 - delete_folder
 
      def to_dict(self):
         return {
@@ -1352,7 +1355,8 @@ class BackupFolder(db.Model):
             'priority': self.priority,
             'txns': self.txns,
             'file_name': self.file_name,
-            'status': self.status
+            'status': self.status,
+            'category_index': self.category_index
         }
      def __repr__(self):
         return f'<BackUpFolder {self.id} - {self.ticker}>'
@@ -1361,7 +1365,7 @@ class BackupFolder(db.Model):
      @staticmethod
      def add_record(ticker,set_number, contract_address, searched_from_date_time, searched_to_date_time, 
                    from_signature, to_signature, from_block_timestamp, to_block_timestamp, 
-                   low_value, peak_value, description, priority,txns, file_name, status):
+                   low_value, peak_value, description, priority,txns, file_name, status,category_index):
         
        
         try:
@@ -1382,7 +1386,8 @@ class BackupFolder(db.Model):
                 priority=priority,
                 txns = txns,
                 file_name=file_name,
-                status=status
+                status=status,
+                category_index=category_index
             )
             
             # Add the new record to the session and commit

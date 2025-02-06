@@ -18,6 +18,7 @@ def addCoinTransactions(file_all_data):
         from_block_timestamp = file_all_data["from_block_timestamp"]
         to_block_timestamp = file_all_data["to_block_timestamp"]
         priority = file_all_data["priority"]
+        category_index = file_all_data["category_index"]
 
         # Access the 'data' attribute (which is a list of transactions)
         data = file_all_data["data"]
@@ -167,7 +168,8 @@ def addCoinTransactions(file_all_data):
                 'sell_uni_wallet_count': sell_uni_wallet_count,
                 'low_value': low_value,
                 'peak_value': peak_value,
-                'status': 1  # Status 1 - pending
+                'status': 1 , # Status 1 - pending
+                'category_index': category_index  # Status 1 - pending
             }
 
 

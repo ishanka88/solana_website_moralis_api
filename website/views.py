@@ -152,6 +152,7 @@ def start_task():
     lowValue=data.get('lowValue')
     description=data.get('description')
     peakValue=data.get('peakValue')
+    category_index=int(data.get('category'))
 
 
     # Create a datetime object for the start date
@@ -173,7 +174,7 @@ def start_task():
     formatted_end_date_str = formatted_end_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
 
-    result =findTransactions.get_transactions_from_Date_and_Time(contractAddress,ticker,formatted_start_date_str,formatted_end_date_str, lowValue, peakValue, description,priority)
+    result =findTransactions.get_transactions_from_Date_and_Time(contractAddress,ticker,formatted_start_date_str,formatted_end_date_str, lowValue, peakValue, description,priority,category_index)
     
     return jsonify(result)
 
@@ -1263,3 +1264,12 @@ def get_whale_gainers():
 
 
 
+###############################################################################################
+###############################################################################################
+
+## Insider PAGE
+
+@views.route('/insiders', methods=['GET', 'POST'])
+def insiders():
+
+        return render_template("insiders.html")
