@@ -1,20 +1,19 @@
 document.getElementsByTagName('body')[0].classList.add('bg-dark');
 
 const rowsPerPage = 5;
-let table_one_currentPage = 1;
-let table_two_currentPage = 1;
+
+let whaleTableCurrentPage = 1;
 
 document.addEventListener('DOMContentLoaded', function() {
     fetch('/get-whales-data')
         .then(response => response.json())
         .then(data => {
-            table_one_data = data.coins;
-            table_two_data = data.whales;
+            whale_maian_table_data = data.whales;
 
             active_coin_count = data.status_data.active_coin_count
             active_set_count = data.status_data.active_set_count
 
-            tableTwoRenderTable(table_two_data);
+            RenderWhaleTable(whale_maian_table_data);
 
 
             const countElment = document.getElementById('counts');
@@ -29,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // whale two
 
-function tableTwoRenderTable(data, page = 1) {
+function RenderWhaleTable(data, page = 1) {
     const tableBody = document.getElementById('secondTableBody');
     tableBody.innerHTML = '';
 
@@ -83,7 +82,15 @@ function tableTwoRenderTable(data, page = 1) {
             let coinTr = document.createElement('tr');
             console.log(coin)
             coinTr.innerHTML = `
-                <th scope="row"></th>
+                <th scope="row">
+                        <div class="icon-link-hover "> 
+                            <a class="icon-link icon-link-hover" href="https://solscan.io/account/${row.whale_address}?token_address=${coin.coin_address}#balanceChanges" target="_blank">
+                                <i class="bi bi-upc-scan fs-5"></i>
+                                <svg class="bi" aria-hidden="true"><use xlink:href="#arrow-right"></use></svg>
+                            </a>
+                        </div>
+                 
+                </th>
                 <td> 
                     <div class="d-flex justify-content-between" >
                         <div>
@@ -104,7 +111,9 @@ function tableTwoRenderTable(data, page = 1) {
                         </div>
                     </div>  
                 </td>
-                <td></td>
+                <td>
+                
+                </td>
             `;
             
             tableBody.appendChild(coinTr);
@@ -113,10 +122,10 @@ function tableTwoRenderTable(data, page = 1) {
         row_number++;
     });
 
-    tableTwoRenderPagination(data.length, page);
+    WhaleTableRenderPagination(data.length, page);
 }
 
-function tableTwoRenderPagination(totalRows, page = 1) {
+function WhaleTableRenderPagination(totalRows, page = 1) {
     const totalPages = Math.ceil(totalRows / rowsPerPage);
     const pagination = document.getElementById('table_two_pagination');
     pagination.innerHTML = '';  // Clear previous pagination
@@ -141,8 +150,8 @@ function tableTwoRenderPagination(totalRows, page = 1) {
     prevButton.addEventListener('click', function (e) {
         e.preventDefault();
         if (page > 1) {
-            table_two_currentPage = page - 1;
-            tableTwoRenderTable(table_two_data, table_two_currentPage);
+            whaleTableCurrentPage = page - 1;
+            RenderWhaleTable(whale_maian_table_data, whaleTableCurrentPage);
         }
     });
     paginationContainer.appendChild(prevButton);
@@ -154,8 +163,8 @@ function tableTwoRenderPagination(totalRows, page = 1) {
         li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
         li.addEventListener('click', function (e) {
             e.preventDefault();
-            table_two_currentPage = i;
-            tableTwoRenderTable(table_two_data, table_two_currentPage);
+            whaleTableCurrentPage = i;
+            RenderWhaleTable(whale_maian_table_data, whaleTableCurrentPage);
         });
         paginationContainer.appendChild(li);
     }
@@ -167,8 +176,8 @@ function tableTwoRenderPagination(totalRows, page = 1) {
     nextButton.addEventListener('click', function (e) {
         e.preventDefault();
         if (page < totalPages) {
-            table_two_currentPage = page + 1;
-            tableTwoRenderTable(table_two_data, table_two_currentPage);
+            whaleTableCurrentPage = page + 1;
+            RenderWhaleTable(whale_maian_table_data, whaleTableCurrentPage);
         }
     });
     paginationContainer.appendChild(nextButton);
@@ -186,33 +195,14 @@ function tableTwoRenderPagination(totalRows, page = 1) {
 
 
 
-// function tableTwoRenderPagination(totalRows, page = 1) {
-//     const totalPages = Math.ceil(totalRows / rowsPerPage);
-//     const pagination = document.getElementById('table_two_pagination');
-//     pagination.innerHTML = '';
-
-//     for (let i = 1; i <= totalPages; i++) {
-//         const li = document.createElement('li');
-//         li.className = `page-item ${i === page ? 'active' : ''}`;
-//         li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-//         li.addEventListener('click', function () {
-//             table_two_currentPage = i;
-//             tableTwoRenderTable(table_two_data, table_two_currentPage);
-//         });
-//         pagination.appendChild(li);
-//     }
-// }
-
-
-
 document.getElementById('table_two_searchInput').addEventListener('input', function(event) {
     const searchTerm = event.target.value.toLowerCase();
     if (searchTerm !== "") {
-        table_two_search_data = table_two_data.filter(row => row.whale_address.toLowerCase().includes(searchTerm));
-        table_two_currentPage = 1;
-        tableTwoRenderTable(table_two_search_data, table_two_currentPage);
+        table_two_search_data = whale_maian_table_data.filter(row => row.whale_address.toLowerCase().includes(searchTerm));
+        whaleTableCurrentPage = 1;
+        RenderWhaleTable(table_two_search_data, whaleTableCurrentPage);
     } else {
-        table_two_currentPage = 1;
-        tableTwoRenderTable(table_two_data, table_two_currentPage);
+        whaleTableCurrentPage = 1;
+        RenderWhaleTable(whale_maian_table_data, whaleTableCurrentPage);
     }
 });

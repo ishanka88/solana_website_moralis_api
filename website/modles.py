@@ -94,10 +94,26 @@ class AvailableCoinSets(db.Model): ## searchedCoins
      def get_item(set_num):
         item = AvailableCoinSets.query.get(set_num)
         return item
+     
      def get_priority(set_num):
           priority = AvailableCoinSets.get_item(set_num).priority
           return priority
      
+
+     def get_unique_ticker_and_contract_addresses():
+          # Query to get distinct ticker and contract_address pairs
+          unique_pairs = db.session.query(
+               AvailableCoinSets.ticker, AvailableCoinSets.contract_address
+          ).distinct().all()
+          
+          # Convert the list of tuples into a list of dictionaries
+          result = [{'ticker': ticker, 'contract_address': contract_address} for ticker, contract_address in unique_pairs]
+          
+          return result
+
+
+
+          
      
      def get_buy_sets_count (contract_address):
 
@@ -618,16 +634,17 @@ class CoinTransactions (db.Model): #coinTransactions
         }
 
      def get_transactions_by_set_number(set_number):
+          """
+          This method returns all transactions for a given set_number, sorted by most recent first.
+          
+          :param set_number: The set number to filter transactions by
+          :return: List of CoinTransactions matching the given set_number, sorted with the most recent first
+          """
+          # Query the database for all transactions with the given set_number, ordered by time_stamp in descending order.
+          transactions = db.session.query(CoinTransactions).filter_by(set_number=set_number).order_by(CoinTransactions.time_stamp.asc()).all()
 
-        """
-        This method returns all transactions for a given set_number.
-        
-        :param set_number: The set number to filter transactions by
-        :return: List of CoinTransactions matching the given set_number
-        """
-        # Query the database for all transactions with the given set_number
-        transactions = db.session.query(CoinTransactions).filter_by(set_number=set_number).all()
-        return transactions
+          return transactions
+
 
      @classmethod
      def add_transactions_to_db(cls, transaction_data):

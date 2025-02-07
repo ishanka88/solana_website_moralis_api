@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 from os import path
 
 
+
 # Initialize extensions
 db = SQLAlchemy()
 DB_NAME = "database_moralis.db"
@@ -26,7 +27,7 @@ def create_app():
     create_database(app)
 
     # Import additional methods (these should be imported after the app and db initialization)
-    from .methods import findTransactions, whalesCa, pairs, gainersMethods,coinFiles
+    from .methods import findTransactions, whalesCa, pairs, gainersMethods,coinFiles,getWhalseData,getInsidersData
 
     return app 
 
@@ -38,6 +39,8 @@ def create_database(app):
         print('Created Database')
     else:
         print('Database already exists')
+
+    
 
 
 

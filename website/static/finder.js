@@ -494,9 +494,6 @@ function renderTable(data, page = 1,status) {
         action_column = ` 
             <div class="d-flex flex-row justify-content-around">
               <div class="icon-link icon-link-hover">
-                  <i class="bi bi-trash  icon-link icon-link-hover" name="delete_active"></i>
-              </div>
-              <div class="icon-link icon-link-hover">
                 <i class="bi bi-arrow-left-right icon-link icon-link-hover" name="active-to-pending"></i>
               </div>
             </div>
@@ -597,7 +594,7 @@ function renderTable(data, page = 1,status) {
               ${action_column}
           </td>
           <td> 
-              <button type="button" class="btn btn-info" onclick="funGetTransactionsDetails('${row.set_number}','${row.ticker}','${row.contract_adress}','${status}','${row.priority}')">Info</button>
+              <button type="button" class="btn btn-info" onclick="funGetTransactionsDetails('${row.set_number}','${row.ticker}','${row.contract_adress}','${status}','${row.priority}',${row.valid_txn_count},)">Info</button>
           </td>
 
         `;
@@ -1106,14 +1103,14 @@ document.addEventListener('DOMContentLoaded', () => {
 let transactionsData =[]
 let coniDetails =[]
 
-function funGetTransactionsDetails(setNumber,ticker,contract_adress,status,priority) {
+function funGetTransactionsDetails(setNumber,ticker,contract_adress,status,priority,valid_txn_count) {
 
     let targetElement1 = $('#mainElement');
     targetElement1.addClass('d-none'); // Adds the 'd-none' class to hide the element
     let targetElement2 = $('#txnDetails');
     targetElement2.removeClass('d-none');
 
-    getTransactionsData(setNumber,ticker,contract_adress,status,priority)
+    getTransactionsData(setNumber,ticker,contract_adress,status,priority,valid_txn_count)
 }
 
 function goExit() {
@@ -1130,7 +1127,7 @@ function goBack() {
  // Adds the 'd-none' class to hide the element
 }
 
-function getTransactionsData(setNumber,ticker,contract_adress,status,priority){
+function getTransactionsData(setNumber,ticker,contract_adress,status,priority,valid_txn_count){
 
     fetch(`/get-transactions-data?setNumber=${encodeURIComponent(setNumber)}`, {
         method: 'GET',
@@ -1142,9 +1139,9 @@ function getTransactionsData(setNumber,ticker,contract_adress,status,priority){
     .then(data => {
         if (data.status){
             transactionsData = data.transactions
-            coniDetails =[setNumber,ticker,contract_adress,status,priority]
+            coniDetails =[setNumber,ticker,contract_adress,status,priority,valid_txn_count]
      
-            renderTransactionsTable(data.transactions,page = 1,setNumber,ticker,contract_adress,status,priority) // Access the 'data' key in the response
+            renderTransactionsTable(transactionsData,page = 1,setNumber,ticker,contract_adress,status,priority,valid_txn_count) // Access the 'data' key in the response
         }else{
             alert (data.message,error)
         }
@@ -1205,7 +1202,7 @@ function filterTransactionByTokenAmount(tokenAmount) {
 
 const rowsPerPageTxn = 10;  // Number of rows per page
 
-function renderTransactionsPagination(data, page = 1, setNumber, ticker, contract_adress, status,priority) {
+function renderTransactionsPagination(data, page = 1, setNumber, ticker, contract_adress, status, priority) {
     const totalRows = data.length;
     const totalPages = Math.ceil(totalRows / rowsPerPageTxn); // Total number of pages
     const pagination = document.getElementById('pagination2');
@@ -1221,7 +1218,7 @@ function renderTransactionsPagination(data, page = 1, setNumber, ticker, contrac
     prevButton.innerHTML = `<a class="page-link" href="#">Previous</a>`;
     prevButton.addEventListener('click', function() {
         if (page > 1) {
-            renderTransactionsTable(data, page - 1, setNumber, ticker, contract_adress, status,priority);
+            renderTransactionsTable(data, page - 1, setNumber, ticker, contract_adress, status, priority);
         }
     });
     pagination.appendChild(prevButton);
@@ -1232,7 +1229,7 @@ function renderTransactionsPagination(data, page = 1, setNumber, ticker, contrac
         li.className = `page-item ${i === page ? 'active' : ''}`;
         li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
         li.addEventListener('click', function() {
-            renderTransactionsTable(data, i, setNumber, ticker, contract_adress, status,priority);
+            renderTransactionsTable(data, i, setNumber, ticker, contract_adress, status, priority);
         });
         pagination.appendChild(li);
     }
@@ -1243,7 +1240,7 @@ function renderTransactionsPagination(data, page = 1, setNumber, ticker, contrac
     nextButton.innerHTML = `<a class="page-link" href="#">Next</a>`;
     nextButton.addEventListener('click', function() {
         if (page < totalPages) {
-            renderTransactionsTable(data, page + 1, setNumber, ticker, contract_adress, status,priority);
+            renderTransactionsTable(data, page + 1, setNumber, ticker, contract_adress, status, priority);
         }
     });
     pagination.appendChild(nextButton);
@@ -1251,15 +1248,34 @@ function renderTransactionsPagination(data, page = 1, setNumber, ticker, contrac
     // Display the maximum page number
     const maxPageNumber = document.createElement('span');
     maxPageNumber.className = 'max-page';
-    maxPageNumber.innerHTML = `Page ${page} of ${totalPages}`; // Display current page and total pages
+    maxPageNumber.innerHTML = ` <span class="p-3"> Page ${page} of ${totalPages}</span>`; // Display current page and total pages
     pagination.appendChild(maxPageNumber);
+
+    // Add an input field to jump to a specific page
+    const jumpPageInput = document.createElement('input');
+    jumpPageInput.type = 'number';
+    jumpPageInput.min = 1;
+    jumpPageInput.max = totalPages;
+    jumpPageInput.placeholder = `Page`;
+    jumpPageInput.className = 'page-input';
+    jumpPageInput.addEventListener('change', function() {
+        let targetPage = parseInt(jumpPageInput.value);
+        if (targetPage >= 1 && targetPage <= totalPages) {
+            renderTransactionsTable(data, targetPage, setNumber, ticker, contract_adress, status, priority);
+        } else {
+            alert('Please enter a valid page number');
+        }
+    });
+    
+    pagination.appendChild(jumpPageInput);
 }
 
+
   
-function renderTransactionsTable(data, page = 1,setNumber,ticker,contract_adress,status , priority) {
+function renderTransactionsTable(data, page = 1,setNumber,ticker,contract_adress,status , priority, valid_txn_count) {
         const txnHeadDetails = document.getElementById('txnHeadDetails');
         const transactionsCountHtml = document.getElementById('transactionsCount');
-        transactionsCountHtml.innerHTML = `<span>Transactions - ${data.length}</span>`;
+        transactionsCountHtml.innerHTML = `<span class="px-3" >All Txns - ${data.length}</span> <span class="px-3 text-success"> Valid Txns - ${valid_txn_count}</span> <span class="px-3 text-danger"> Fake Txns - ${data.length- valid_txn_count}</span>`;
         
 
         if (priority==="buy"){
@@ -1384,12 +1400,18 @@ function renderTransactionsTable(data, page = 1,setNumber,ticker,contract_adress
                     BUY
                 </div>
           `
-            }else{
+            }else if(row.status=="sell"){
                 status_element = ` 
                 <div class="font-weight-bold text-danger">
                     SELL
                 </div>
             `
+            }else{
+                status_element = ` 
+                <div class="font-weight-bold text-warning">
+                    FAKE
+                </div>
+            ` 
             }
 
             tr.innerHTML = `
